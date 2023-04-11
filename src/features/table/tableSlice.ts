@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
 import { DB_NAMES } from '../../constants';
 
 const initialState: TableState = {

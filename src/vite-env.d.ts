@@ -2,7 +2,7 @@
 
 interface ITableRow {
   date: string;
-  temperature: Number;
+  temperature: number;
 }
 
 interface IDataRow {
