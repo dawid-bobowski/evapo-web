@@ -1,7 +1,18 @@
-import { LineChart, CartesianGrid, Line, XAxis, YAxis, Legend, Tooltip, ReferenceArea } from 'recharts';
+import {
+  LineChart,
+  CartesianGrid,
+  Line,
+  XAxis,
+  YAxis,
+  Legend,
+  Tooltip,
+  ReferenceArea,
+  ResponsiveContainer,
+} from 'recharts';
 import { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import _ from 'lodash';
 
 import { useAppDispatch, useAppSelector } from '../app/hooks';
@@ -9,6 +20,7 @@ import { setTable } from '../features/table/tableSlice';
 import CustomTooltip from './CustomTooltip';
 import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
+import { convertDate } from '../utils';
 
 const getAxisYDomain = (
   data: ITableRow[],
@@ -26,7 +38,7 @@ const getAxisYDomain = (
     if (d[field] < bottom) bottom = d[field];
   });
 
-  return [(bottom as number | 0) - offset, (top as number | 0) + offset];
+  return [_.round((bottom as number | 0) - offset, 1), _.round((top as number | 0) + offset, 1)];
 };
 
 const MainChart = () => {
@@ -38,8 +50,8 @@ const MainChart = () => {
   const [refAreaRight, setRefAreaRight] = useState<string>('');
   const [left, setLeft] = useState<string>('');
   const [right, setRight] = useState<string>('');
-  const [top, setTop] = useState<number | string>('dataMax+1');
-  const [bottom, setBottom] = useState<number | string>('dataMin-1');
+  const [top, setTop] = useState<number | string>('');
+  const [bottom, setBottom] = useState<number | string>('');
 
   const zoom = () => {
     if (refAreaLeft === refAreaRight || refAreaRight === '') {
@@ -73,8 +85,8 @@ const MainChart = () => {
     setRefAreaRight('');
     setLeft(refLeft);
     setRight(refRight);
-    setBottom(newBottom);
     setTop(newTop);
+    setBottom(newBottom);
   };
 
   const resetZoom = () => {
@@ -122,73 +134,98 @@ const MainChart = () => {
           padding: '3rem 4rem 3rem 1rem',
         }}
       >
-        <Box style={{ width: '100%', marginLeft: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
+        <Box style={{ width: 1100, marginLeft: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
           <TableSelect />
-          <button
-            className='btn update'
-            onClick={() => resetZoom()}
+          <Button
+            onClick={resetZoom}
+            sx={{
+              width: 80,
+              lineHeight: 1.5,
+              fontWeight: 'bold',
+              height: '2.5rem',
+              alignSelf: 'flex-start',
+              marginBottom: '2rem',
+              marginLeft: '1rem',
+              color: '#002d80',
+              backgroundColor: '#fff',
+              textTransform: 'capitalize',
+              '&:hover': {
+                backgroundColor: '#eee',
+              },
+            }}
           >
             Reset
-          </button>
+          </Button>
         </Box>
-        <LineChart
-          width={1100}
+        <ResponsiveContainer
+          width='100%'
           height={500}
-          data={refTable}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          onMouseDown={(e) => {
-            if (e.activeLabel) {
-              setRefAreaLeft(e.activeLabel);
-            }
-          }}
-          onMouseMove={(e) => {
-            if (e.activeLabel) {
-              setRefAreaRight(e.activeLabel);
-            }
-          }}
-          onMouseUp={zoom}
         >
-          <CartesianGrid strokeDasharray='3 3' />
-          <XAxis
-            dataKey='date'
-            allowDataOverflow
-            domain={[left, right]}
-            label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
-          />
-          <YAxis
-            yAxisId='1'
-            allowDataOverflow
-            domain={[bottom, top]}
-            label={{ value: 'Temperatura', angle: -90, position: 'insideLeft' }}
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            wrapperStyle={{
-              color: '#fff',
-              backgroundColor: '#002d80',
-              fontWeight: 'bold',
-              borderRadius: '3px',
-              padding: '0 1rem',
-              opacity: 0.9,
+          <LineChart
+            width={1100}
+            height={500}
+            data={refTable}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            onMouseDown={(e) => {
+              if (e.activeLabel) {
+                setRefAreaLeft(e.activeLabel);
+              }
             }}
-          />
-          <Legend payload={[{ value: 'temperatura [°C]', color: '#002d80', type: 'line' }]} />
-          <Line
-            yAxisId='1'
-            type='monotone'
-            dataKey='temperature'
-            stroke='#002d80'
-            animationDuration={300}
-          />
-          {refAreaLeft && refAreaRight ? (
-            <ReferenceArea
-              yAxisId='1'
-              x1={refAreaLeft}
-              x2={refAreaRight}
-              strokeOpacity={0.3}
+            onMouseMove={(e) => {
+              if (e.activeLabel) {
+                setRefAreaRight(e.activeLabel);
+              }
+            }}
+            onMouseUp={zoom}
+          >
+            <CartesianGrid
+              strokeDasharray='3 3'
+              horizontalPoints={[150, 300]}
             />
-          ) : null}
-        </LineChart>
+            <XAxis
+              dataKey='date'
+              padding='gap'
+              allowDataOverflow
+              domain={[left, right]}
+              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
+              tickFormatter={(value: string) => convertDate(value)}
+              tickCount={10}
+            />
+            <YAxis
+              dataKey='temperature'
+              yAxisId='1'
+              padding={{ bottom: 10, top: 10 }}
+              allowDataOverflow
+              domain={[bottom, top]}
+              label={{ value: 'Temperatura', angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{
+                color: '#fff',
+                backgroundColor: '#000',
+                padding: '0 1rem',
+                opacity: 0.8,
+              }}
+            />
+            <Legend payload={[{ value: 'temperatura [°C]', color: '#002d80', type: 'line' }]} />
+            <Line
+              yAxisId='1'
+              type='monotone'
+              dataKey='temperature'
+              stroke='#002d80'
+              animationDuration={300}
+            />
+            {refAreaLeft && refAreaRight ? (
+              <ReferenceArea
+                yAxisId='1'
+                x1={refAreaLeft}
+                x2={refAreaRight}
+                strokeOpacity={0.3}
+              />
+            ) : null}
+          </LineChart>
+        </ResponsiveContainer>
       </Card>
     </div>
   );
