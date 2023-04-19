@@ -32,11 +32,16 @@ const getAxisYDomain = (
   const startIndex: number = data.findIndex((item) => item.date === from);
   const endIndex: number = data.findIndex((item) => item.date === to);
   const refData: ITableRow[] = data.slice(startIndex, endIndex + 1);
-  let [bottom, top]: [bottom: number | string, top: number | string] = [refData[0][field], refData[0][field]];
-  refData.forEach((d: ITableRow) => {
-    if (d[field] > top) top = d[field];
-    if (d[field] < bottom) bottom = d[field];
-  });
+  let [bottom, top]: [bottom: number | string, top: number | string] = [refData[0][field] || 0, refData[0][field] || 0];
+
+  if (refData.length > 0) {
+    refData.forEach((d: ITableRow) => {
+      const fieldValue: string | number | undefined = d[field];
+
+      if (fieldValue && fieldValue > top) top = fieldValue;
+      if (fieldValue && fieldValue < bottom) bottom = fieldValue;
+    });
+  }
 
   return [_.round((bottom as number | 0) - offset, 1), _.round((top as number | 0) + offset, 1)];
 };
@@ -78,7 +83,7 @@ const MainChart = () => {
     }
 
     // // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(currentTable, refLeft, refRight, 'temperature', 1);
+    const [newBottom, newTop] = getAxisYDomain(currentTable, refLeft, refRight, 'T', 1);
 
     setRefTable(currentTable.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
@@ -94,7 +99,7 @@ const MainChart = () => {
       currentTable,
       currentTable[0].date,
       currentTable[currentTable.length - 1].date,
-      'temperature',
+      'T',
       1
     );
 
@@ -110,18 +115,12 @@ const MainChart = () => {
   useEffect(() => {
     getDbTable(selectedTableName)
       .then((newData) => {
+        const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
+        setTop(newTop);
+        setBottom(newBottom);
         dispatch(setTable({ newTable: newData }));
         setCurrentTable(newData);
         setRefTable(newData);
-        const [newBottom, newTop] = getAxisYDomain(
-          newData,
-          newData[0].date,
-          newData[newData.length - 1].date,
-          'temperature',
-          1
-        );
-        setTop(newTop);
-        setBottom(newBottom);
       })
       .catch((error) => console.error(error));
   }, [selectedTableName]);
@@ -192,7 +191,7 @@ const MainChart = () => {
               tickCount={10}
             />
             <YAxis
-              dataKey='temperature'
+              dataKey='T'
               yAxisId='1'
               padding={{ bottom: 10, top: 10 }}
               allowDataOverflow
@@ -212,7 +211,7 @@ const MainChart = () => {
             <Line
               yAxisId='1'
               type='monotone'
-              dataKey='temperature'
+              dataKey='T'
               stroke='#002d80'
               animationDuration={300}
             />

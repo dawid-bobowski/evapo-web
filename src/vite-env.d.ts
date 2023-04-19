@@ -2,7 +2,18 @@
 
 interface ITableRow {
   date: string;
-  temperature: number;
+  T?: number;
+  Rs?: number;
+  RH?: number;
+  V?: number;
+  P?: number;
+  RH13?: number;
+  RHmin?: number;
+  Tmax?: number;
+  Tmin?: number;
+  Ra?: number;
+  Emax?: number;
+  E?: number;
 }
 
 interface IDataRow {

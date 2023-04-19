@@ -8,7 +8,7 @@ export const getDbTable = async (selectedTableName: string): Promise<ITableRow[]
   const data: IDataRow[] = await response.json();
   const parsedData: ITableRow[] = data.map((row: IDataRow) => ({
     date: row.Dzien,
-    temperature: _.toNumber(row.T.replace(',', '.')),
+    T: _.toNumber(row.T.replace(',', '.')),
   }));
   return parsedData;
 };
