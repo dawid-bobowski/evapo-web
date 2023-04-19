@@ -33,6 +33,8 @@ interface IDataRow {
 }
 
 interface TableState {
-  currentTable: ITableRow[];
-  selectedTableName: string;
+  currentTable1: ITableRow[];
+  currentTable2: ITableRow[];
+  selectedTableName1: string;
+  selectedTableName2: string;
 }

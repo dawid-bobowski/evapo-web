@@ -3,19 +3,19 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
-import { setSelectedTableName, setTable } from '../features/table/tableSlice';
+import { setSelectedTableName1, setTable1 } from '../features/table/tablesSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { DB_NAMES } from '../constants';
 import { getDbTable } from '../api';
 
 const TableSelect = () => {
   const dispatch = useAppDispatch();
-  const selectedTableName: string = useAppSelector((state) => state.table.selectedTableName);
+  const selectedTableName: string = useAppSelector((state) => state.tables.selectedTableName1);
 
   const handleChange = (event: SelectChangeEvent) => {
-    dispatch(setSelectedTableName({ newSelectedTableName: event.target.value }));
+    dispatch(setSelectedTableName1({ newSelectedTableName: event.target.value }));
     getDbTable(event.target.value)
-      .then((newData) => dispatch(setTable({ newTable: newData })))
+      .then((newData) => dispatch(setTable1({ newTable: newData })))
       .catch((error) => console.error(error));
   };
 

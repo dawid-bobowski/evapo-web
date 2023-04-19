@@ -16,7 +16,7 @@ import Button from '@mui/material/Button';
 import _ from 'lodash';
 
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { setTable } from '../features/table/tableSlice';
+import { setTable1 } from '../features/table/tablesSlice';
 import CustomTooltip from './CustomTooltip';
 import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
@@ -48,9 +48,9 @@ const getAxisYDomain = (
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
-  const selectedTableName: string = useAppSelector((state) => state.table.selectedTableName);
-  const [currentTable, setCurrentTable] = useState<ITableRow[]>([]);
-  const [refTable, setRefTable] = useState<ITableRow[]>([]);
+  const selectedTableName1: string = useAppSelector((state) => state.tables.selectedTableName1);
+  const [currentTable1, setCurrentTable1] = useState<ITableRow[]>([]);
+  const [refTable1, setRefTable1] = useState<ITableRow[]>([]);
   const [refAreaLeft, setRefAreaLeft] = useState<string>('');
   const [refAreaRight, setRefAreaRight] = useState<string>('');
   const [left, setLeft] = useState<string>('');
@@ -69,12 +69,12 @@ const MainChart = () => {
     let refLeft = refAreaLeft;
     let refRight = refAreaRight;
     let refAreaLeftIndex = _.indexOf(
-      currentTable,
-      currentTable.find((el) => el.date === refAreaLeft)
+      currentTable1,
+      currentTable1.find((el) => el.date === refAreaLeft)
     );
     let refAreaRightIndex = _.indexOf(
-      currentTable,
-      currentTable.find((el) => el.date === refAreaRight)
+      currentTable1,
+      currentTable1.find((el) => el.date === refAreaRight)
     );
 
     if (refAreaLeftIndex > refAreaRightIndex) {
@@ -83,9 +83,9 @@ const MainChart = () => {
     }
 
     // // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(currentTable, refLeft, refRight, 'T', 1);
+    const [newBottom, newTop] = getAxisYDomain(currentTable1, refLeft, refRight, 'T', 1);
 
-    setRefTable(currentTable.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+    setRefTable1(currentTable1.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
     setRefAreaRight('');
     setLeft(refLeft);
@@ -96,34 +96,34 @@ const MainChart = () => {
 
   const resetZoom = () => {
     const [newBottom, newTop] = getAxisYDomain(
-      currentTable,
-      currentTable[0].date,
-      currentTable[currentTable.length - 1].date,
+      currentTable1,
+      currentTable1[0].date,
+      currentTable1[currentTable1.length - 1].date,
       'T',
       1
     );
 
-    setRefTable(currentTable);
+    setRefTable1(currentTable1);
     setRefAreaLeft('');
     setRefAreaRight('');
-    setLeft(currentTable[0].date);
-    setRight(currentTable[currentTable.length - 1].date);
+    setLeft(currentTable1[0].date);
+    setRight(currentTable1[currentTable1.length - 1].date);
     setTop(newTop);
     setBottom(newBottom);
   };
 
   useEffect(() => {
-    getDbTable(selectedTableName)
+    getDbTable(selectedTableName1)
       .then((newData) => {
         const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
         setTop(newTop);
         setBottom(newBottom);
-        dispatch(setTable({ newTable: newData }));
-        setCurrentTable(newData);
-        setRefTable(newData);
+        dispatch(setTable1({ newTable: newData }));
+        setCurrentTable1(newData);
+        setRefTable1(newData);
       })
       .catch((error) => console.error(error));
-  }, [selectedTableName]);
+  }, [selectedTableName1]);
 
   return (
     <div id='table'>
@@ -163,7 +163,7 @@ const MainChart = () => {
           <LineChart
             width={1100}
             height={500}
-            data={refTable}
+            data={refTable1}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             onMouseDown={(e) => {
               if (e.activeLabel) {
