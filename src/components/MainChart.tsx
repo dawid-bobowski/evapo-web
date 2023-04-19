@@ -10,13 +10,14 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useEffect, useState } from 'react';
+import { SelectChangeEvent } from '@mui/material';
 import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
 
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { setTable1 } from '../features/table/tablesSlice';
+import { setSelectedTableName1, setSelectedTableName2, setTable1, setTable2 } from '../features/table/tablesSlice';
 import CustomTooltip from './CustomTooltip';
 import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
@@ -49,14 +50,25 @@ const getAxisYDomain = (
 const MainChart = () => {
   const dispatch = useAppDispatch();
   const selectedTableName1: string = useAppSelector((state) => state.tables.selectedTableName1);
+  const selectedTableName2: string = useAppSelector((state) => state.tables.selectedTableName2);
   const [currentTable1, setCurrentTable1] = useState<ITableRow[]>([]);
+  const [currentTable2, setCurrentTable2] = useState<ITableRow[]>([]);
   const [refTable1, setRefTable1] = useState<ITableRow[]>([]);
+  const [refTable2, setRefTable2] = useState<ITableRow[]>([]);
   const [refAreaLeft, setRefAreaLeft] = useState<string>('');
   const [refAreaRight, setRefAreaRight] = useState<string>('');
   const [left, setLeft] = useState<string>('');
   const [right, setRight] = useState<string>('');
   const [top, setTop] = useState<number | string>('');
   const [bottom, setBottom] = useState<number | string>('');
+
+  const handleChange = (props: IHandleChangeSelectChangeProps) => {
+    const { event, setSelectedTableName, setTable } = props;
+    dispatch(setSelectedTableName({ newSelectedTableName: event.target.value }));
+    getDbTable(event.target.value)
+      .then((newData) => dispatch(setTable({ newTable: newData })))
+      .catch((error) => console.error(error));
+  };
 
   const zoom = () => {
     if (refAreaLeft === refAreaRight || refAreaRight === '') {
@@ -86,6 +98,7 @@ const MainChart = () => {
     const [newBottom, newTop] = getAxisYDomain(currentTable1, refLeft, refRight, 'T', 1);
 
     setRefTable1(currentTable1.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+    setRefTable2(currentTable2.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
     setRefAreaRight('');
     setLeft(refLeft);
@@ -104,6 +117,7 @@ const MainChart = () => {
     );
 
     setRefTable1(currentTable1);
+    setRefTable2(currentTable2);
     setRefAreaLeft('');
     setRefAreaRight('');
     setLeft(currentTable1[0].date);
@@ -125,6 +139,16 @@ const MainChart = () => {
       .catch((error) => console.error(error));
   }, [selectedTableName1]);
 
+  useEffect(() => {
+    getDbTable(selectedTableName2)
+      .then((newData) => {
+        dispatch(setTable2({ newTable: newData }));
+        setCurrentTable2(newData);
+        setRefTable2(newData);
+      })
+      .catch((error) => console.error(error));
+  }, [selectedTableName2]);
+
   return (
     <div id='table'>
       <Card
@@ -133,8 +157,21 @@ const MainChart = () => {
           padding: '3rem 4rem 3rem 1rem',
         }}
       >
-        <Box style={{ width: 1100, marginLeft: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
-          <TableSelect />
+        <Box style={{ width: 1100, marginLeft: '5rem', display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+          <TableSelect
+            label='Tabela 1'
+            tableName={selectedTableName1}
+            onChange={(event: SelectChangeEvent) =>
+              handleChange({ event, setSelectedTableName: setSelectedTableName1, setTable: setTable1 })
+            }
+          />
+          <TableSelect
+            label='Tabela 2'
+            tableName={selectedTableName2}
+            onChange={(event: SelectChangeEvent) =>
+              handleChange({ event, setSelectedTableName: setSelectedTableName2, setTable: setTable2 })
+            }
+          />
           <Button
             onClick={resetZoom}
             sx={{
@@ -144,7 +181,6 @@ const MainChart = () => {
               height: '2.5rem',
               alignSelf: 'flex-start',
               marginBottom: '2rem',
-              marginLeft: '1rem',
               color: '#002d80',
               backgroundColor: '#fff',
               textTransform: 'capitalize',
@@ -158,11 +194,12 @@ const MainChart = () => {
         </Box>
         <ResponsiveContainer
           width='100%'
-          height={500}
+          height={300}
         >
           <LineChart
+            syncId='tables'
             width={1100}
-            height={500}
+            height={300}
             data={refTable1}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             onMouseDown={(e) => {
@@ -179,7 +216,7 @@ const MainChart = () => {
           >
             <CartesianGrid
               strokeDasharray='3 3'
-              horizontalPoints={[150, 300]}
+              horizontalPoints={[5, 80, 160]}
             />
             <XAxis
               dataKey='date'
@@ -192,7 +229,6 @@ const MainChart = () => {
             />
             <YAxis
               dataKey='T'
-              yAxisId='1'
               padding={{ bottom: 10, top: 10 }}
               allowDataOverflow
               domain={[bottom, top]}
@@ -209,7 +245,6 @@ const MainChart = () => {
             />
             <Legend payload={[{ value: 'temperatura [°C]', color: '#002d80', type: 'line' }]} />
             <Line
-              yAxisId='1'
               type='monotone'
               dataKey='T'
               stroke='#002d80'
@@ -217,7 +252,73 @@ const MainChart = () => {
             />
             {refAreaLeft && refAreaRight ? (
               <ReferenceArea
-                yAxisId='1'
+                x1={refAreaLeft}
+                x2={refAreaRight}
+                strokeOpacity={0.3}
+              />
+            ) : null}
+          </LineChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer
+          width='100%'
+          height={300}
+        >
+          <LineChart
+            syncId='tables'
+            width={1100}
+            height={300}
+            data={refTable2}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            onMouseDown={(e) => {
+              if (e.activeLabel) {
+                setRefAreaLeft(e.activeLabel);
+              }
+            }}
+            onMouseMove={(e) => {
+              if (e.activeLabel) {
+                setRefAreaRight(e.activeLabel);
+              }
+            }}
+            onMouseUp={zoom}
+          >
+            <CartesianGrid
+              strokeDasharray='3 3'
+              horizontalPoints={[5, 80, 160]}
+            />
+            <XAxis
+              dataKey='date'
+              padding='gap'
+              allowDataOverflow
+              domain={[left, right]}
+              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
+              tickFormatter={(value: string) => convertDate(value)}
+              tickCount={10}
+            />
+            <YAxis
+              dataKey='T'
+              padding={{ bottom: 10, top: 10 }}
+              allowDataOverflow
+              domain={[bottom, top]}
+              label={{ value: 'Temperatura', angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{
+                color: '#fff',
+                backgroundColor: '#000',
+                padding: '0 1rem',
+                opacity: 0.8,
+              }}
+            />
+            <Legend payload={[{ value: 'temperatura [°C]', color: '#008044', type: 'line' }]} />
+            <Line
+              type='monotone'
+              dataKey='T'
+              stroke='#008044'
+              animationDuration={300}
+            />
+            {refAreaLeft && refAreaRight ? (
+              <ReferenceArea
                 x1={refAreaLeft}
                 x2={refAreaRight}
                 strokeOpacity={0.3}

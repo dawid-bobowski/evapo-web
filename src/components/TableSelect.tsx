@@ -3,22 +3,15 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
-import { setSelectedTableName1, setTable1 } from '../features/table/tablesSlice';
-import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { DB_NAMES } from '../constants';
-import { getDbTable } from '../api';
 
-const TableSelect = () => {
-  const dispatch = useAppDispatch();
-  const selectedTableName: string = useAppSelector((state) => state.tables.selectedTableName1);
+interface ITableSelectProps {
+  label: string;
+  tableName: string;
+  onChange: (event: SelectChangeEvent) => void;
+}
 
-  const handleChange = (event: SelectChangeEvent) => {
-    dispatch(setSelectedTableName1({ newSelectedTableName: event.target.value }));
-    getDbTable(event.target.value)
-      .then((newData) => dispatch(setTable1({ newTable: newData })))
-      .catch((error) => console.error(error));
-  };
-
+const TableSelect = (props: ITableSelectProps) => {
   return (
     <FormControl
       id='table-form-control'
@@ -28,13 +21,13 @@ const TableSelect = () => {
         marginBottom: '2rem',
       }}
     >
-      <InputLabel id='table-select-label'>Table</InputLabel>
+      <InputLabel id='table-select-label'>{props.label}</InputLabel>
       <Select
         labelId='table-select-label'
         id='table-select'
         label='table'
-        value={selectedTableName}
-        onChange={handleChange}
+        value={props.tableName}
+        onChange={props.onChange}
       >
         {DB_NAMES.map((dbName) => (
           <MenuItem

@@ -38,3 +38,13 @@ interface TableState {
   selectedTableName1: string;
   selectedTableName2: string;
 }
+
+interface IHandleChangeSelectChangeProps {
+  event: SelectChangeEvent;
+  setSelectedTableName: ActionCreatorWithPayload<{
+    newSelectedTableName: string;
+  }>;
+  setTable: ActionCreatorWithPayload<{
+    newTable: ITableRow[];
+  }>;
+}
