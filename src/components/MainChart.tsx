@@ -61,7 +61,7 @@ const MainChart = () => {
   const [right, setRight] = useState<string>('');
   const [top, setTop] = useState<number | string>('');
   const [bottom, setBottom] = useState<number | string>('');
-
+  // calculateDateRange(currentTable1, currentTable2))
   const handleChange = (props: IHandleChangeSelectChangeProps) => {
     const { event, setSelectedTableName, setTable } = props;
     dispatch(setSelectedTableName({ newSelectedTableName: event.target.value }));
@@ -128,7 +128,7 @@ const MainChart = () => {
 
   useEffect(() => {
     getDbTable(selectedTableName1)
-      .then((newData) => {
+      .then((newData: ITableRow[]) => {
         const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
         setTop(newTop);
         setBottom(newBottom);
@@ -141,13 +141,21 @@ const MainChart = () => {
 
   useEffect(() => {
     getDbTable(selectedTableName2)
-      .then((newData) => {
+      .then((newData: ITableRow[]) => {
         dispatch(setTable2({ newTable: newData }));
         setCurrentTable2(newData);
         setRefTable2(newData);
       })
       .catch((error) => console.error(error));
   }, [selectedTableName2]);
+
+  const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): { from: string; to: string } => {
+    let from: string = data1[0].date;
+    let to: string = data1[data1.length - 1].date;
+    if (from < data2[0].date) from = data2[0].date;
+    if (to > data2[data2.length - 1].date) to = data2[data2.length - 1].date;
+    return { from, to };
+  };
 
   return (
     <div id='table'>
