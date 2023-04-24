@@ -61,7 +61,7 @@ const MainChart = () => {
   const [right, setRight] = useState<string>('');
   const [top, setTop] = useState<number | string>('');
   const [bottom, setBottom] = useState<number | string>('');
-  // calculateDateRange(currentTable1, currentTable2))
+
   const handleChange = (props: IHandleChangeSelectChangeProps) => {
     const { event, setSelectedTableName, setTable } = props;
     dispatch(setSelectedTableName({ newSelectedTableName: event.target.value }));
@@ -94,7 +94,7 @@ const MainChart = () => {
       refAreaRightIndex = [refAreaLeftIndex, (refAreaLeftIndex = refAreaRightIndex)][0];
     }
 
-    // // yAxis domain
+    // yAxis domain
     const [newBottom, newTop] = getAxisYDomain(currentTable1, refLeft, refRight, 'T', 1);
 
     setRefTable1(currentTable1.slice(refAreaLeftIndex, refAreaRightIndex + 1));
@@ -142,12 +142,48 @@ const MainChart = () => {
   useEffect(() => {
     getDbTable(selectedTableName2)
       .then((newData: ITableRow[]) => {
+        const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
+        setTop(newTop);
+        setBottom(newBottom);
         dispatch(setTable2({ newTable: newData }));
         setCurrentTable2(newData);
         setRefTable2(newData);
       })
       .catch((error) => console.error(error));
   }, [selectedTableName2]);
+
+  useEffect(() => {
+    if (!_.isEmpty(currentTable1) && !_.isEmpty(currentTable2)) {
+      // set new dates to match both tables
+      const calculatedRange: { from: string; to: string } = calculateDateRange(currentTable1, currentTable2);
+      setLeft(calculatedRange.from);
+      setRight(calculatedRange.to);
+
+      // set new top and bottom domains
+      const [newTop1, newBottom1] = getAxisYDomain(currentTable1, calculatedRange.from, calculatedRange.to, 'T', 1);
+      const [newTop2, newBottom2] = getAxisYDomain(currentTable2, calculatedRange.from, calculatedRange.to, 'T', 1);
+      const newTop = newTop1 > newTop2 ? newTop1 : newTop2;
+      const newBottom = newBottom1 > newBottom2 ? newBottom1 : newBottom2;
+      setTop(newTop);
+      setBottom(newBottom);
+
+      // set ref tables
+      const firstDataIndex1: number | undefined = _.findIndex(
+        currentTable1,
+        (data) => data.date === calculatedRange.from
+      );
+      const firstDataIndex2: number | undefined = _.findIndex(
+        currentTable2,
+        (data) => data.date === calculatedRange.from
+      );
+      const lastDataIndex1: number | undefined = _.findIndex(currentTable1, (data) => data.date === calculatedRange.to);
+      const lastDataIndex2: number | undefined = _.findIndex(currentTable2, (data) => data.date === calculatedRange.to);
+      const newRefTable1: ITableRow[] = _.slice(currentTable1, firstDataIndex1, lastDataIndex1 + 1);
+      const newRefTable2: ITableRow[] = _.slice(currentTable2, firstDataIndex2, lastDataIndex2 + 1);
+      setRefTable1(newRefTable1);
+      setRefTable2(newRefTable2);
+    }
+  }, [currentTable1, currentTable2]);
 
   const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): { from: string; to: string } => {
     let from: string = data1[0].date;
