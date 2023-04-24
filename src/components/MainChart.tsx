@@ -16,36 +16,12 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
 
-import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { setSelectedTableName1, setSelectedTableName2, setTable1, setTable2 } from '../features/table/tablesSlice';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { convertDate, getAxisYDomain, setRefTables } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
-import { convertDate } from '../utils';
-
-const getAxisYDomain = (
-  data: ITableRow[],
-  from: string,
-  to: string,
-  field: keyof ITableRow,
-  offset: number
-): number[] => {
-  const startIndex: number = data.findIndex((item) => item.date === from);
-  const endIndex: number = data.findIndex((item) => item.date === to);
-  const refData: ITableRow[] = data.slice(startIndex, endIndex + 1);
-  let [bottom, top]: [bottom: number | string, top: number | string] = [refData[0][field] || 0, refData[0][field] || 0];
-
-  if (refData.length > 0) {
-    refData.forEach((d: ITableRow) => {
-      const fieldValue: string | number | undefined = d[field];
-
-      if (fieldValue && fieldValue > top) top = fieldValue;
-      if (fieldValue && fieldValue < bottom) bottom = fieldValue;
-    });
-  }
-
-  return [_.round((bottom as number | 0) - offset, 1), _.round((top as number | 0) + offset, 1)];
-};
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
@@ -70,6 +46,9 @@ const MainChart = () => {
       .catch((error) => console.error(error));
   };
 
+  /**
+   * Performs zoom in on both tables.
+   */
   const zoom = () => {
     if (refAreaLeft === refAreaRight || refAreaRight === '') {
       setRefAreaLeft('');
@@ -107,23 +86,20 @@ const MainChart = () => {
     setBottom(newBottom);
   };
 
+  /**
+   * Resets zoom on both tables.
+   */
   const resetZoom = () => {
-    const [newBottom, newTop] = getAxisYDomain(
+    setRefTables({
       currentTable1,
-      currentTable1[0].date,
-      currentTable1[currentTable1.length - 1].date,
-      'T',
-      1
-    );
-
-    setRefTable1(currentTable1);
-    setRefTable2(currentTable2);
-    setRefAreaLeft('');
-    setRefAreaRight('');
-    setLeft(currentTable1[0].date);
-    setRight(currentTable1[currentTable1.length - 1].date);
-    setTop(newTop);
-    setBottom(newBottom);
+      currentTable2,
+      setLeft,
+      setRight,
+      setTop,
+      setBottom,
+      setRefTable1,
+      setRefTable2,
+    });
   };
 
   useEffect(() => {
@@ -153,45 +129,17 @@ const MainChart = () => {
   }, [selectedTableName2]);
 
   useEffect(() => {
-    if (!_.isEmpty(currentTable1) && !_.isEmpty(currentTable2)) {
-      // set new dates to match both tables
-      const calculatedRange: { from: string; to: string } = calculateDateRange(currentTable1, currentTable2);
-      setLeft(calculatedRange.from);
-      setRight(calculatedRange.to);
-
-      // set new top and bottom domains
-      const [newTop1, newBottom1] = getAxisYDomain(currentTable1, calculatedRange.from, calculatedRange.to, 'T', 1);
-      const [newTop2, newBottom2] = getAxisYDomain(currentTable2, calculatedRange.from, calculatedRange.to, 'T', 1);
-      const newTop = newTop1 > newTop2 ? newTop1 : newTop2;
-      const newBottom = newBottom1 > newBottom2 ? newBottom1 : newBottom2;
-      setTop(newTop);
-      setBottom(newBottom);
-
-      // set ref tables
-      const firstDataIndex1: number | undefined = _.findIndex(
-        currentTable1,
-        (data) => data.date === calculatedRange.from
-      );
-      const firstDataIndex2: number | undefined = _.findIndex(
-        currentTable2,
-        (data) => data.date === calculatedRange.from
-      );
-      const lastDataIndex1: number | undefined = _.findIndex(currentTable1, (data) => data.date === calculatedRange.to);
-      const lastDataIndex2: number | undefined = _.findIndex(currentTable2, (data) => data.date === calculatedRange.to);
-      const newRefTable1: ITableRow[] = _.slice(currentTable1, firstDataIndex1, lastDataIndex1 + 1);
-      const newRefTable2: ITableRow[] = _.slice(currentTable2, firstDataIndex2, lastDataIndex2 + 1);
-      setRefTable1(newRefTable1);
-      setRefTable2(newRefTable2);
-    }
+    setRefTables({
+      currentTable1,
+      currentTable2,
+      setLeft,
+      setRight,
+      setTop,
+      setBottom,
+      setRefTable1,
+      setRefTable2,
+    });
   }, [currentTable1, currentTable2]);
-
-  const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): { from: string; to: string } => {
-    let from: string = data1[0].date;
-    let to: string = data1[data1.length - 1].date;
-    if (from < data2[0].date) from = data2[0].date;
-    if (to > data2[data2.length - 1].date) to = data2[data2.length - 1].date;
-    return { from, to };
-  };
 
   return (
     <div id='table'>

@@ -48,3 +48,8 @@ interface IHandleChangeSelectChangeProps {
     newTable: ITableRow[];
   }>;
 }
+
+interface IDateRange {
+  from: string;
+  to: string;
+}
