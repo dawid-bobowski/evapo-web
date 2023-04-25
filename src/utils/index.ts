@@ -1,35 +1,38 @@
 import _ from 'lodash';
 
 interface ICalculateEvapoProps {
-  RH: number;
-  R_a: number;
-  R_s: number;
-  T: number;
-  V: number;
+  RH: number | null;
+  R_a: number | null;
+  R_s: number | null;
+  T: number | null;
+  V: number | null;
 }
 
 /**
  * Calculates ET_0.
- * @param {ICalculateEvapoProps} props object with required constants (RH, R_a, R_sW, T, V).
+ * @param {ICalculateEvapoProps} props object with required constants (RH, R_a, R_s, T, V).
  * @returns {number} calculated ET_0.
  */
-export const calculateEvapo = (props: ICalculateEvapoProps): number => {
+export const calculateEvapo = (props: ICalculateEvapoProps): number | null => {
   const { RH, R_a, R_s, T, V } = props;
 
-  // constants
-  const e_s: number = 0.6108 * Math.exp((17.27 * T) / (T + 273));
-  const e_a: number = (RH * e_s) / 100;
-  const VPD: number = e_s - e_a;
-  const delta: number = (4098 * e_s) / ((T + 273) ^ 2);
-  const R_s0: number = 0.75 * R_a;
-  const R_NL: number = 4.903 * (10 ^ -9) * ((T + 273) ^ 4) * (0.34 - 0.14 * Math.sqrt(e_a)) * 1.35 * (R_s / R_s0);
-  const R_NS: number = 0.77 * R_s;
-  const R_N: number = R_NS - R_NL;
+  if (RH !== null && R_a !== null && R_s !== null && T !== null && V !== null) {
+    // constants
+    const e_s: number = 0.6108 * Math.exp((17.27 * T) / (T + 273));
+    const e_a: number = (RH * e_s) / 100;
+    const VPD: number = e_s - e_a;
+    const delta: number = (4098 * e_s) / ((T + 273) ^ 2);
+    const R_s0: number = 0.75 * R_a;
+    const R_NL: number = 4.903 * (10 ^ -9) * ((T + 273) ^ 4) * (0.34 - 0.14 * Math.sqrt(e_a)) * 1.35 * (R_s / R_s0);
+    const R_NS: number = 0.77 * R_s;
+    const R_N: number = R_NS - R_NL;
 
-  // calculation
-  const ET_0: number = (0.408 * delta * R_N + 0.067 * V * ((900 * VPD) / (T + 273))) / (delta + 0.067 * (1 + 0.34 * V));
+    // calculation
+    const ET_0: number =
+      (0.408 * delta * R_N + 0.067 * V * ((900 * VPD) / (T + 273))) / (delta + 0.067 * (1 + 0.34 * V));
 
-  return ET_0;
+    return ET_0;
+  } else return null;
 };
 
 /**
@@ -75,7 +78,7 @@ export const getAxisYDomain = (
 
   if (refData.length > 0) {
     refData.forEach((d: ITableRow) => {
-      const fieldValue: string | number | undefined = d[field];
+      const fieldValue: string | number | null = d[field];
 
       if (fieldValue && fieldValue > top) top = fieldValue;
       if (fieldValue && fieldValue < bottom) bottom = fieldValue;

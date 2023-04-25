@@ -1,5 +1,4 @@
 import {
-  LineChart,
   CartesianGrid,
   Line,
   XAxis,
@@ -8,6 +7,8 @@ import {
   Tooltip,
   ReferenceArea,
   ResponsiveContainer,
+  ComposedChart,
+  Area,
 } from 'recharts';
 import { useEffect, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material';
@@ -188,7 +189,7 @@ const MainChart = () => {
           width='100%'
           height={300}
         >
-          <LineChart
+          <ComposedChart
             syncId='tables'
             width={1100}
             height={300}
@@ -206,6 +207,26 @@ const MainChart = () => {
             }}
             onMouseUp={zoom}
           >
+            <defs>
+              <linearGradient
+                id='colorEt0'
+                x1='0'
+                y1='0'
+                x2='0'
+                y2='1'
+              >
+                <stop
+                  offset='5%'
+                  stopColor='#002d80'
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset='95%'
+                  stopColor='#002d80'
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
             <CartesianGrid
               strokeDasharray='3 3'
               horizontalPoints={[5, 80, 160]}
@@ -221,10 +242,39 @@ const MainChart = () => {
             />
             <YAxis
               dataKey='T'
+              yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
               allowDataOverflow
               domain={[bottom, top]}
-              label={{ value: 'Temperatura', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Temperatura', angle: -90, position: 'left' }}
+            />
+            <YAxis
+              dataKey='Et0'
+              yAxisId='Et0'
+              orientation='right'
+              padding={{ bottom: 10, top: 10 }}
+              allowDataOverflow
+              domain={[0, 8000]}
+              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right' }}
+            />
+            <Line
+              type='monotone'
+              dataKey='T'
+              yAxisId='T'
+              stroke='#ff0000'
+              strokeWidth={2}
+              animationDuration={300}
+              dot={false}
+            />
+            <Area
+              type='monotone'
+              dataKey='Et0'
+              yAxisId='Et0'
+              stroke='#002d808f'
+              fillOpacity={0.5}
+              fill='url(#colorEt0)'
+              animationDuration={300}
+              dot={false}
             />
             <Tooltip
               content={<CustomTooltip />}
@@ -235,12 +285,11 @@ const MainChart = () => {
                 opacity: 0.8,
               }}
             />
-            <Legend payload={[{ value: 'temperatura [°C]', color: '#002d80', type: 'line' }]} />
-            <Line
-              type='monotone'
-              dataKey='T'
-              stroke='#002d80'
-              animationDuration={300}
+            <Legend
+              payload={[
+                { value: 'T [°C]', color: '#002d808f', type: 'line' },
+                { value: 'Et0 [mm^3]', color: '#ff0000', type: 'line' },
+              ]}
             />
             {refAreaLeft && refAreaRight ? (
               <ReferenceArea
@@ -249,13 +298,13 @@ const MainChart = () => {
                 strokeOpacity={0.3}
               />
             ) : null}
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
         <ResponsiveContainer
           width='100%'
           height={300}
         >
-          <LineChart
+          <ComposedChart
             syncId='tables'
             width={1100}
             height={300}
@@ -288,10 +337,35 @@ const MainChart = () => {
             />
             <YAxis
               dataKey='T'
+              yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
               allowDataOverflow
               domain={[bottom, top]}
               label={{ value: 'Temperatura', angle: -90, position: 'insideLeft' }}
+            />
+            <YAxis
+              dataKey='Et0'
+              yAxisId='Et0'
+              padding={{ bottom: 10, top: 10 }}
+              allowDataOverflow
+              domain={[0, 8000]}
+              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'insideRight' }}
+            />
+            <Line
+              type='monotone'
+              dataKey='T'
+              yAxisId='T'
+              stroke='#008064'
+              animationDuration={300}
+              dot={false}
+            />
+            <Line
+              type='monotone'
+              dataKey='Et0'
+              yAxisId='Et0'
+              stroke='#2be2a5'
+              animationDuration={300}
+              dot={false}
             />
             <Tooltip
               content={<CustomTooltip />}
@@ -302,12 +376,11 @@ const MainChart = () => {
                 opacity: 0.8,
               }}
             />
-            <Legend payload={[{ value: 'temperatura [°C]', color: '#008044', type: 'line' }]} />
-            <Line
-              type='monotone'
-              dataKey='T'
-              stroke='#008044'
-              animationDuration={300}
+            <Legend
+              payload={[
+                { value: 'T [°C]', color: '#008064', type: 'line' },
+                { value: 'Et0 [mm^3]', color: '#2be2a5', type: 'line' },
+              ]}
             />
             {refAreaLeft && refAreaRight ? (
               <ReferenceArea
@@ -316,7 +389,7 @@ const MainChart = () => {
                 strokeOpacity={0.3}
               />
             ) : null}
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </Card>
     </div>

@@ -2,18 +2,19 @@
 
 interface ITableRow {
   date: string;
-  T?: number;
-  Rs?: number;
-  RH?: number;
-  V?: number;
-  P?: number;
-  RH13?: number;
-  RHmin?: number;
-  Tmax?: number;
-  Tmin?: number;
-  Ra?: number;
-  Emax?: number;
-  E?: number;
+  T: number | null;
+  Rs: number | null;
+  RH: number | null;
+  V: number | null;
+  P: number | null;
+  RH13: number | null;
+  RHmin: number | null;
+  Tmax: number | null;
+  Tmin: number | null;
+  Ra: number | null;
+  Emax: number | null;
+  E: number | null;
+  Et0: number | null;
 }
 
 interface IDataRow {
