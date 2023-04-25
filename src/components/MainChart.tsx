@@ -234,7 +234,6 @@ const MainChart = () => {
             <XAxis
               dataKey='date'
               padding='gap'
-              allowDataOverflow
               domain={[left, right]}
               label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
               tickFormatter={(value: string) => convertDate(value)}
@@ -244,7 +243,6 @@ const MainChart = () => {
               dataKey='T'
               yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
-              allowDataOverflow
               domain={[bottom, top]}
               label={{ value: 'Temperatura', angle: -90, position: 'left' }}
             />
@@ -253,26 +251,25 @@ const MainChart = () => {
               yAxisId='Et0'
               orientation='right'
               padding={{ bottom: 10, top: 10 }}
-              allowDataOverflow
               domain={[0, 8000]}
               label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right' }}
-            />
-            <Line
-              type='monotone'
-              dataKey='T'
-              yAxisId='T'
-              stroke='#ff0000'
-              strokeWidth={2}
-              animationDuration={300}
-              dot={false}
             />
             <Area
               type='monotone'
               dataKey='Et0'
               yAxisId='Et0'
-              stroke='#002d808f'
-              fillOpacity={0.5}
+              stroke='#002d80'
+              fillOpacity={0.8}
               fill='url(#colorEt0)'
+              animationDuration={300}
+              dot={false}
+            />
+            <Line
+              type='monotone'
+              dataKey='T'
+              yAxisId='T'
+              stroke='#2fc4ff'
+              strokeWidth={2}
               animationDuration={300}
               dot={false}
             />
@@ -287,8 +284,8 @@ const MainChart = () => {
             />
             <Legend
               payload={[
-                { value: 'T [°C]', color: '#002d808f', type: 'line' },
-                { value: 'Et0 [mm^3]', color: '#ff0000', type: 'line' },
+                { value: 'T [°C]', color: '#2fc4ff', type: 'line' },
+                { value: 'Et0 [mm^3]', color: '#002d80', type: 'line' },
               ]}
             />
             {refAreaLeft && refAreaRight ? (
@@ -322,6 +319,26 @@ const MainChart = () => {
             }}
             onMouseUp={zoom}
           >
+            <defs>
+              <linearGradient
+                id='colorT'
+                x1='0'
+                y1='0'
+                x2='0'
+                y2='1'
+              >
+                <stop
+                  offset='5%'
+                  stopColor='#008064'
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset='95%'
+                  stopColor='#008064'
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
             <CartesianGrid
               strokeDasharray='3 3'
               horizontalPoints={[5, 80, 160]}
@@ -329,7 +346,6 @@ const MainChart = () => {
             <XAxis
               dataKey='date'
               padding='gap'
-              allowDataOverflow
               domain={[left, right]}
               label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
               tickFormatter={(value: string) => convertDate(value)}
@@ -339,31 +355,33 @@ const MainChart = () => {
               dataKey='T'
               yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
-              allowDataOverflow
               domain={[bottom, top]}
-              label={{ value: 'Temperatura', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Temperatura', angle: -90, position: 'left' }}
             />
             <YAxis
               dataKey='Et0'
               yAxisId='Et0'
+              orientation='right'
               padding={{ bottom: 10, top: 10 }}
-              allowDataOverflow
               domain={[0, 8000]}
-              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'insideRight' }}
+              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right' }}
             />
-            <Line
+            <Area
               type='monotone'
-              dataKey='T'
-              yAxisId='T'
+              dataKey='Et0'
+              yAxisId='Et0'
               stroke='#008064'
+              fillOpacity={0.8}
+              fill='url(#colorT)'
               animationDuration={300}
               dot={false}
             />
             <Line
               type='monotone'
-              dataKey='Et0'
-              yAxisId='Et0'
+              dataKey='T'
+              yAxisId='T'
               stroke='#2be2a5'
+              strokeWidth={2}
               animationDuration={300}
               dot={false}
             />
@@ -378,8 +396,8 @@ const MainChart = () => {
             />
             <Legend
               payload={[
-                { value: 'T [°C]', color: '#008064', type: 'line' },
-                { value: 'Et0 [mm^3]', color: '#2be2a5', type: 'line' },
+                { value: 'T [°C]', color: '#2be2a5', type: 'line' },
+                { value: 'Et0 [mm^3]', color: '#008064', type: 'line' },
               ]}
             />
             {refAreaLeft && refAreaRight ? (
