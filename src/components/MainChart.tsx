@@ -51,7 +51,7 @@ const MainChart = () => {
    * Performs zoom in on both tables.
    */
   const zoom = () => {
-    if (refAreaLeft === refAreaRight || refAreaRight === '') {
+    if (refAreaLeft === refAreaRight || refAreaLeft === '' || refAreaRight === '') {
       setRefAreaLeft('');
       setRefAreaRight('');
       return;
@@ -73,7 +73,7 @@ const MainChart = () => {
       refRight = [refLeft, (refLeft = refRight)][0];
       refAreaRightIndex = [refAreaLeftIndex, (refAreaLeftIndex = refAreaRightIndex)][0];
     }
-
+    if (refLeft === '' || refRight === '') return;
     // yAxis domain
     const [newBottom, newTop] = getAxisYDomain(currentTable1, refLeft, refRight, 'T', 1);
 
@@ -214,14 +214,14 @@ const MainChart = () => {
             height={300}
             data={refTable1}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            onMouseDown={(e) => {
-              if (e.activeLabel) {
-                setRefAreaLeft(e.activeLabel);
+            onMouseDown={(event) => {
+              if (event && event.activeLabel) {
+                setRefAreaLeft(event.activeLabel);
               }
             }}
-            onMouseMove={(e) => {
-              if (e.activeLabel) {
-                setRefAreaRight(e.activeLabel);
+            onMouseMove={(event) => {
+              if (event && event.activeLabel) {
+                setRefAreaRight(event.activeLabel);
               }
             }}
             onMouseUp={zoom}
@@ -318,7 +318,7 @@ const MainChart = () => {
             <Legend
               payload={[
                 { value: 'T [°C]', color: '#2fc4ff', type: 'line' },
-                { value: 'ET0 [mm^3]', color: '#3467c4', type: 'line' },
+                { value: 'ET0 [mm]', color: '#3467c4', type: 'line' },
               ]}
             />
             {refAreaLeft && refAreaRight ? (
@@ -341,14 +341,14 @@ const MainChart = () => {
             height={300}
             data={refTable2}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            onMouseDown={(e) => {
-              if (e.activeLabel) {
-                setRefAreaLeft(e.activeLabel);
+            onMouseDown={(event) => {
+              if (event && event.activeLabel) {
+                setRefAreaLeft(event.activeLabel);
               }
             }}
-            onMouseMove={(e) => {
-              if (e.activeLabel) {
-                setRefAreaRight(e.activeLabel);
+            onMouseMove={(event) => {
+              if (event && event.activeLabel) {
+                setRefAreaRight(event.activeLabel);
               }
             }}
             onMouseUp={zoom}
@@ -444,7 +444,7 @@ const MainChart = () => {
             <Legend
               payload={[
                 { value: 'T [°C]', color: '#2be2a5', type: 'line' },
-                { value: 'ET0 [mm^3]', color: '#008064', type: 'line' },
+                { value: 'ET0 [mm]', color: '#008064', type: 'line' },
               ]}
             />
             {refAreaLeft && refAreaRight ? (

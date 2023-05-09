@@ -16,13 +16,13 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
         {T && (
           <p>
             <span style={{ fontWeight: 'bold' }}>T: </span>
-            {T.value}
+            {T.value} °C
           </p>
         )}
         {ET0 && (
           <p>
             <span style={{ fontWeight: 'bold' }}>ET0: </span>
-            {ET0.value}
+            {ET0.value} mm
           </p>
         )}
       </Box>
