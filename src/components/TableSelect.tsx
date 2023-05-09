@@ -17,7 +17,6 @@ const TableSelect = (props: ITableSelectProps) => {
       id='table-form-control'
       size='small'
       sx={{
-        alignSelf: 'flex-start',
         marginBottom: '2rem',
       }}
     >

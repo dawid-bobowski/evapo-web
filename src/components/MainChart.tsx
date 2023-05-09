@@ -9,17 +9,17 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Area,
+  Text,
 } from 'recharts';
 import { useEffect, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material';
-import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
 
 import { setSelectedTableName1, setSelectedTableName2, setTable1, setTable2 } from '../features/table/tablesSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { convertDate, getAxisYDomain, setRefTables } from '../utils';
+import { getAxisYDomain, setRefTables } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
@@ -36,8 +36,8 @@ const MainChart = () => {
   const [refAreaRight, setRefAreaRight] = useState<string>('');
   const [left, setLeft] = useState<string>('');
   const [right, setRight] = useState<string>('');
-  const [top, setTop] = useState<number | string>('');
-  const [bottom, setBottom] = useState<number | string>('');
+  const [top, setTop] = useState<number | null>(null);
+  const [bottom, setBottom] = useState<number | null>(null);
 
   const handleChange = (props: IHandleChangeSelectChangeProps) => {
     const { event, setSelectedTableName, setTable } = props;
@@ -143,48 +143,67 @@ const MainChart = () => {
   }, [currentTable1, currentTable2]);
 
   return (
-    <div id='table'>
-      <Card
-        variant='outlined'
+    <Box
+      id='main-window'
+      sx={{ display: 'flex' }}
+    >
+      <Box
+        id='menu'
         sx={{
-          padding: '3rem 4rem 3rem 1rem',
+          width: 300,
+          height: 'calc(100vh - 10rem)',
+          padding: '5rem 2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          gap: '0.5rem',
+          backgroundColor: '#fff',
         }}
       >
-        <Box style={{ width: 1100, marginLeft: '5rem', display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
-          <TableSelect
-            label='Tabela 1'
-            tableName={selectedTableName1}
-            onChange={(event: SelectChangeEvent) =>
-              handleChange({ event, setSelectedTableName: setSelectedTableName1, setTable: setTable1 })
-            }
-          />
-          <TableSelect
-            label='Tabela 2'
-            tableName={selectedTableName2}
-            onChange={(event: SelectChangeEvent) =>
-              handleChange({ event, setSelectedTableName: setSelectedTableName2, setTable: setTable2 })
-            }
-          />
-          <Button
-            onClick={resetZoom}
-            sx={{
-              width: 80,
-              lineHeight: 1.5,
-              fontWeight: 'bold',
-              height: '2.5rem',
-              alignSelf: 'flex-start',
-              marginBottom: '2rem',
-              color: '#002d80',
-              backgroundColor: '#fff',
-              textTransform: 'capitalize',
-              '&:hover': {
-                backgroundColor: '#eee',
-              },
-            }}
-          >
-            Reset
-          </Button>
-        </Box>
+        <TableSelect
+          label='Tabela 1'
+          tableName={selectedTableName1}
+          onChange={(event: SelectChangeEvent) =>
+            handleChange({ event, setSelectedTableName: setSelectedTableName1, setTable: setTable1 })
+          }
+        />
+        <TableSelect
+          label='Tabela 2'
+          tableName={selectedTableName2}
+          onChange={(event: SelectChangeEvent) =>
+            handleChange({ event, setSelectedTableName: setSelectedTableName2, setTable: setTable2 })
+          }
+        />
+        <Button
+          onClick={resetZoom}
+          sx={{
+            width: 80,
+            lineHeight: 1.5,
+            fontWeight: 'bold',
+            height: '2.5rem',
+            marginBottom: '2rem',
+            color: '#002d80',
+            backgroundColor: '#fff',
+            textTransform: 'capitalize',
+            '&:hover': {
+              backgroundColor: '#eee',
+            },
+          }}
+        >
+          Reset
+        </Button>
+      </Box>
+      <Box
+        id='charts'
+        sx={{
+          width: 'calc(100% - 300px)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: '5rem',
+        }}
+      >
         <ResponsiveContainer
           width='100%'
           height={300}
@@ -217,17 +236,27 @@ const MainChart = () => {
               >
                 <stop
                   offset='5%'
-                  stopColor='#002d80'
+                  stopColor='#3467c4'
                   stopOpacity={0.8}
                 />
                 <stop
                   offset='95%'
-                  stopColor='#002d80'
+                  stopColor='#3467c4'
                   stopOpacity={0}
                 />
               </linearGradient>
             </defs>
+            <text
+              x={170}
+              y={20}
+              fill='white'
+              textAnchor='middle'
+              dominantBaseline='central'
+            >
+              <tspan fontSize='20'>{selectedTableName1}</tspan>
+            </text>
             <CartesianGrid
+              stroke='#fff'
               strokeDasharray='3 3'
               horizontalPoints={[5, 80, 160]}
             />
@@ -235,31 +264,35 @@ const MainChart = () => {
               dataKey='date'
               padding='gap'
               domain={[left, right]}
-              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
-              tickFormatter={(value: string) => convertDate(value)}
+              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20, stroke: '#fff', dx: -60 }}
               tickCount={10}
+              tick={{ fill: '#fff' }}
+              tickLine={{ stroke: '#fff' }}
             />
             <YAxis
               dataKey='T'
               yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
-              domain={[bottom, top]}
-              label={{ value: 'Temperatura', angle: -90, position: 'left' }}
+              domain={[bottom as number, top as number]}
+              label={{ value: 'Temperatura', angle: -90, position: 'left', stroke: '#fff', dy: -45 }}
+              tick={{ fill: '#fff' }}
+              tickLine={{ stroke: '#fff' }}
             />
             <YAxis
-              dataKey='Et0'
-              yAxisId='Et0'
+              dataKey='ET0'
+              yAxisId='ET0'
               orientation='right'
               padding={{ bottom: 10, top: 10 }}
-              domain={[0, 8000]}
-              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right' }}
+              domain={[0, 10]}
+              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right', stroke: '#fff', dy: -65 }}
+              tick={{ fill: '#fff' }}
+              tickLine={{ stroke: '#fff' }}
             />
             <Area
               type='monotone'
-              dataKey='Et0'
-              yAxisId='Et0'
-              stroke='#002d80'
-              fillOpacity={0.8}
+              dataKey='ET0'
+              yAxisId='ET0'
+              stroke='#3467c4'
               fill='url(#colorEt0)'
               animationDuration={300}
               dot={false}
@@ -285,7 +318,7 @@ const MainChart = () => {
             <Legend
               payload={[
                 { value: 'T [°C]', color: '#2fc4ff', type: 'line' },
-                { value: 'Et0 [mm^3]', color: '#002d80', type: 'line' },
+                { value: 'ET0 [mm^3]', color: '#3467c4', type: 'line' },
               ]}
             />
             {refAreaLeft && refAreaRight ? (
@@ -303,6 +336,7 @@ const MainChart = () => {
         >
           <ComposedChart
             syncId='tables'
+            title={selectedTableName2}
             width={1100}
             height={300}
             data={refTable2}
@@ -339,6 +373,15 @@ const MainChart = () => {
                 />
               </linearGradient>
             </defs>
+            <text
+              x={170}
+              y={20}
+              fill='white'
+              textAnchor='middle'
+              dominantBaseline='central'
+            >
+              <tspan fontSize='20'>{selectedTableName2}</tspan>
+            </text>
             <CartesianGrid
               strokeDasharray='3 3'
               horizontalPoints={[5, 80, 160]}
@@ -347,31 +390,35 @@ const MainChart = () => {
               dataKey='date'
               padding='gap'
               domain={[left, right]}
-              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20 }}
-              tickFormatter={(value: string) => convertDate(value)}
+              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20, stroke: '#fff', dx: -60 }}
               tickCount={10}
+              tick={{ fill: '#fff' }}
+              tickLine={{ stroke: '#fff' }}
             />
             <YAxis
               dataKey='T'
               yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
-              domain={[bottom, top]}
-              label={{ value: 'Temperatura', angle: -90, position: 'left' }}
+              domain={[bottom as number, top as number]}
+              label={{ value: 'Temperatura', angle: -90, position: 'left', stroke: '#fff', dy: -45 }}
+              tick={{ fill: '#fff' }}
+              tickLine={{ stroke: '#fff' }}
             />
             <YAxis
-              dataKey='Et0'
-              yAxisId='Et0'
+              dataKey='ET0'
+              yAxisId='ET0'
               orientation='right'
               padding={{ bottom: 10, top: 10 }}
-              domain={[0, 8000]}
-              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right' }}
+              domain={[0, 10]}
+              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right', stroke: '#fff', dy: -65 }}
+              tick={{ fill: '#fff' }}
+              tickLine={{ stroke: '#fff' }}
             />
             <Area
               type='monotone'
-              dataKey='Et0'
-              yAxisId='Et0'
+              dataKey='ET0'
+              yAxisId='ET0'
               stroke='#008064'
-              fillOpacity={0.8}
               fill='url(#colorT)'
               animationDuration={300}
               dot={false}
@@ -397,7 +444,7 @@ const MainChart = () => {
             <Legend
               payload={[
                 { value: 'T [°C]', color: '#2be2a5', type: 'line' },
-                { value: 'Et0 [mm^3]', color: '#008064', type: 'line' },
+                { value: 'ET0 [mm^3]', color: '#008064', type: 'line' },
               ]}
             />
             {refAreaLeft && refAreaRight ? (
@@ -409,8 +456,8 @@ const MainChart = () => {
             ) : null}
           </ComposedChart>
         </ResponsiveContainer>
-      </Card>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

@@ -107,8 +107,8 @@ interface ISetRefTablesProps {
   currentTable2: ITableRow[];
   setLeft: React.Dispatch<React.SetStateAction<string>>;
   setRight: React.Dispatch<React.SetStateAction<string>>;
-  setTop: React.Dispatch<React.SetStateAction<string | number>>;
-  setBottom: React.Dispatch<React.SetStateAction<string | number>>;
+  setTop: React.Dispatch<React.SetStateAction<number | null>>;
+  setBottom: React.Dispatch<React.SetStateAction<number | null>>;
   setRefTable1: React.Dispatch<React.SetStateAction<ITableRow[]>>;
   setRefTable2: React.Dispatch<React.SetStateAction<ITableRow[]>>;
 }

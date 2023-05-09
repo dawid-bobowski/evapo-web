@@ -1,19 +1,17 @@
 import { NameType, Payload, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { TooltipProps } from 'recharts';
 import { Box } from '@mui/material';
-
-import { convertDate } from '../utils';
 import _ from 'lodash';
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
     const T: Payload<ValueType, NameType> | undefined = payload.find((field) => field.name === 'T');
-    const Et0: Payload<ValueType, NameType> | undefined = payload.find((field) => field.name === 'Et0');
+    const ET0: Payload<ValueType, NameType> | undefined = payload.find((field) => field.name === 'ET0');
     return (
       <Box className='custom-tooltip'>
         <p>
           <span style={{ fontWeight: 'bold' }}>Dzień: </span>
-          {convertDate(label)}
+          {label}
         </p>
         {T && (
           <p>
@@ -21,10 +19,10 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
             {T.value}
           </p>
         )}
-        {Et0 && (
+        {ET0 && (
           <p>
-            <span style={{ fontWeight: 'bold' }}>Et0: </span>
-            {_.round(Et0.value as number)}
+            <span style={{ fontWeight: 'bold' }}>ET0: </span>
+            {ET0.value}
           </p>
         )}
       </Box>

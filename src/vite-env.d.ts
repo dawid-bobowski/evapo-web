@@ -2,35 +2,36 @@
 
 interface ITableRow {
   date: string;
-  T: number | null;
-  Rs: number | null;
-  RH: number | null;
-  V: number | null;
-  P: number | null;
-  RH13: number | null;
-  RHmin: number | null;
-  Tmax: number | null;
-  Tmin: number | null;
-  Ra: number | null;
-  Emax: number | null;
-  E: number | null;
-  Et0: number | null;
+  T: number;
+  RH: number;
+  V: number;
+  P: number;
+  Ra: number;
+  es: number;
+  ea: number;
+  VPD: number;
+  RS0: number;
+  Rs: number;
+  RNL: number;
+  RNS: number;
+  ET0: number;
 }
 
 interface IDataRow {
-  Dzien: string;
-  T: string;
-  Rs: string;
-  RH: string;
-  V: string;
-  P: string;
-  RH13: string;
-  RHmin: string;
-  Tmax: string;
-  Tmin: string;
-  Ra: string;
-  Emax: string;
-  E: string;
+  Data: string;
+  T: number;
+  RH: number;
+  V: number;
+  P: number;
+  Ra: number;
+  es: number;
+  ea: number;
+  VPD: number;
+  RS0: number;
+  Rs: number;
+  RNL: number;
+  RNS: number;
+  ET0: number;
 }
 
 interface TableState {
