@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Area,
-  Text,
 } from 'recharts';
 import { useEffect, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material';
@@ -220,7 +219,7 @@ const MainChart = () => {
               }
             }}
             onMouseMove={(event) => {
-              if (event && event.activeLabel) {
+              if (event && event.activeLabel && refAreaLeft !== '') {
                 setRefAreaRight(event.activeLabel);
               }
             }}
@@ -323,9 +322,10 @@ const MainChart = () => {
             />
             {refAreaLeft && refAreaRight ? (
               <ReferenceArea
+                yAxisId='T'
                 x1={refAreaLeft}
                 x2={refAreaRight}
-                strokeOpacity={0.3}
+                fillOpacity={0.3}
               />
             ) : null}
           </ComposedChart>
@@ -347,7 +347,7 @@ const MainChart = () => {
               }
             }}
             onMouseMove={(event) => {
-              if (event && event.activeLabel) {
+              if (event && event.activeLabel && refAreaLeft !== '') {
                 setRefAreaRight(event.activeLabel);
               }
             }}
@@ -449,9 +449,10 @@ const MainChart = () => {
             />
             {refAreaLeft && refAreaRight ? (
               <ReferenceArea
+                yAxisId='T'
                 x1={refAreaLeft}
                 x2={refAreaRight}
-                strokeOpacity={0.3}
+                fillOpacity={0.3}
               />
             ) : null}
           </ComposedChart>
