@@ -143,14 +143,11 @@ const MainChart = () => {
   }, [currentTable1, currentTable2]);
 
   return (
-    <Box
-      id='main-window'
-      sx={{ display: 'flex' }}
-    >
+    <Box id='main-window'>
       <Box
         id='menu'
         sx={{
-          width: 300,
+          width: '200px',
           height: 'calc(100vh - 10rem)',
           padding: '5rem 2rem',
           display: 'flex',
@@ -159,6 +156,7 @@ const MainChart = () => {
           alignItems: 'center',
           gap: '0.5rem',
           backgroundColor: '#fff',
+          position: 'fixed',
         }}
       >
         <TableSelect
@@ -197,11 +195,13 @@ const MainChart = () => {
       <Box
         id='charts'
         sx={{
-          width: 'calc(100% - 300px)',
+          width: 'calc(100% - 200px - 4rem)',
+          minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          gap: '5rem',
+          gap: '3rem',
+          marginLeft: 'calc(200px + 4rem)',
         }}
       >
         <ResponsiveContainer
@@ -210,7 +210,7 @@ const MainChart = () => {
         >
           <ComposedChart
             syncId='tables'
-            width={1100}
+            width={900}
             height={300}
             data={refTable1}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -337,7 +337,7 @@ const MainChart = () => {
           <ComposedChart
             syncId='tables'
             title={selectedTableName2}
-            width={1100}
+            width={900}
             height={300}
             data={refTable2}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
