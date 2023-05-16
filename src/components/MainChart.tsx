@@ -11,7 +11,7 @@ import {
   Area,
 } from 'recharts';
 import { useEffect, useState } from 'react';
-import { SelectChangeEvent } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
@@ -22,14 +22,14 @@ import { getAxisYDomain, setRefTables } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
+import { DB_NAMES } from '../constants';
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
-  const selectedTableName1: string = useAppSelector((state) => state.tables.selectedTableName1);
-  const selectedTableName2: string = useAppSelector((state) => state.tables.selectedTableName2);
-  const [currentTable1, setCurrentTable1] = useState<ITableRow[]>([]);
+  const [selectedTableNamesT, setSelectedTableNamesT] = useState<string[]>([]);
+  const [currentTableT, setCurrentTableT] = useState<ITableRow[]>([]);
   const [currentTable2, setCurrentTable2] = useState<ITableRow[]>([]);
-  const [refTable1, setRefTable1] = useState<ITableRow[]>([]);
+  const [refTableT, setRefTableT] = useState<ITableRow[]>([]);
   const [refTable2, setRefTable2] = useState<ITableRow[]>([]);
   const [refAreaLeft, setRefAreaLeft] = useState<string>('');
   const [refAreaRight, setRefAreaRight] = useState<string>('');
@@ -60,12 +60,12 @@ const MainChart = () => {
     let refLeft = refAreaLeft;
     let refRight = refAreaRight;
     let refAreaLeftIndex = _.indexOf(
-      currentTable1,
-      currentTable1.find((el) => el.date === refAreaLeft)
+      currentTableT,
+      currentTableT.find((el) => el.date === refAreaLeft)
     );
     let refAreaRightIndex = _.indexOf(
-      currentTable1,
-      currentTable1.find((el) => el.date === refAreaRight)
+      currentTableT,
+      currentTableT.find((el) => el.date === refAreaRight)
     );
 
     if (refAreaLeftIndex > refAreaRightIndex) {
@@ -74,9 +74,9 @@ const MainChart = () => {
     }
     if (refLeft === '' || refRight === '') return;
     // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(currentTable1, refLeft, refRight, 'T', 1);
+    const [newBottom, newTop] = getAxisYDomain(currentTableT, refLeft, refRight, 'T', 1);
 
-    setRefTable1(currentTable1.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+    setRefTableT(currentTableT.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefTable2(currentTable2.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
     setRefAreaRight('');
@@ -89,57 +89,57 @@ const MainChart = () => {
   /**
    * Resets zoom on both tables.
    */
-  const resetZoom = () => {
-    setRefTables({
-      currentTable1,
-      currentTable2,
-      setLeft,
-      setRight,
-      setTop,
-      setBottom,
-      setRefTable1,
-      setRefTable2,
-    });
-  };
+  // const resetZoom = () => {
+  //   setRefTables({
+  //     currentTableT,
+  //     currentTable2,
+  //     setLeft,
+  //     setRight,
+  //     setTop,
+  //     setBottom,
+  //     setRefTableT,
+  //     setRefTable2,
+  //   });
+  // };
 
-  useEffect(() => {
-    getDbTable(selectedTableName1)
-      .then((newData: ITableRow[]) => {
-        const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
-        setTop(newTop);
-        setBottom(newBottom);
-        dispatch(setTable1({ newTable: newData }));
-        setCurrentTable1(newData);
-        setRefTable1(newData);
-      })
-      .catch((error) => console.error(error));
-  }, [selectedTableName1]);
+  // useEffect(() => {
+  //   getDbTable(selectedTableName1)
+  //     .then((newData: ITableRow[]) => {
+  //       const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
+  //       setTop(newTop);
+  //       setBottom(newBottom);
+  //       dispatch(setTable1({ newTable: newData }));
+  //       setcurrentTableT(newData);
+  //       setRefTableT(newData);
+  //     })
+  //     .catch((error) => console.error(error));
+  // }, [selectedTableName1]);
 
-  useEffect(() => {
-    getDbTable(selectedTableName2)
-      .then((newData: ITableRow[]) => {
-        const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
-        setTop(newTop);
-        setBottom(newBottom);
-        dispatch(setTable2({ newTable: newData }));
-        setCurrentTable2(newData);
-        setRefTable2(newData);
-      })
-      .catch((error) => console.error(error));
-  }, [selectedTableName2]);
+  // useEffect(() => {
+  //   getDbTable(selectedTableName2)
+  //     .then((newData: ITableRow[]) => {
+  //       const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
+  //       setTop(newTop);
+  //       setBottom(newBottom);
+  //       dispatch(setTable2({ newTable: newData }));
+  //       setCurrentTable2(newData);
+  //       setRefTable2(newData);
+  //     })
+  //     .catch((error) => console.error(error));
+  // }, [selectedTableName2]);
 
-  useEffect(() => {
-    setRefTables({
-      currentTable1,
-      currentTable2,
-      setLeft,
-      setRight,
-      setTop,
-      setBottom,
-      setRefTable1,
-      setRefTable2,
-    });
-  }, [currentTable1, currentTable2]);
+  // useEffect(() => {
+  //   setRefTables({
+  //     currentTableT,
+  //     currentTable2,
+  //     setLeft,
+  //     setRight,
+  //     setTop,
+  //     setBottom,
+  //     setRefTableT,
+  //     setRefTable2,
+  //   });
+  // }, [currentTableT, currentTable2]);
 
   return (
     <Box id='main-window'>
@@ -158,22 +158,34 @@ const MainChart = () => {
           position: 'fixed',
         }}
       >
-        <TableSelect
-          label='Tabela 1'
-          tableName={selectedTableName1}
-          onChange={(event: SelectChangeEvent) =>
-            handleChange({ event, setSelectedTableName: setSelectedTableName1, setTable: setTable1 })
-          }
-        />
-        <TableSelect
-          label='Tabela 2'
-          tableName={selectedTableName2}
-          onChange={(event: SelectChangeEvent) =>
-            handleChange({ event, setSelectedTableName: setSelectedTableName2, setTable: setTable2 })
-          }
-        />
+        <FormControl
+          size='small'
+          sx={{
+            marginBottom: '2rem',
+            width: 160,
+          }}
+        >
+          <InputLabel id='table-select-label'>Wybierz lata</InputLabel>
+          <Select
+            multiple
+            value={selectedTableNamesT}
+            onChange={(event: SelectChangeEvent<string[]>) => {
+              if (typeof event.target.value === 'string') return;
+              setSelectedTableNamesT(event.target.value);
+            }}
+          >
+            {DB_NAMES.map((name) => (
+              <MenuItem
+                key={name}
+                value={name}
+              >
+                {name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Button
-          onClick={resetZoom}
+          // onClick={resetZoom}
           sx={{
             width: 80,
             lineHeight: 1.5,
@@ -211,7 +223,7 @@ const MainChart = () => {
             syncId='tables'
             width={900}
             height={300}
-            data={refTable1}
+            data={refTableT}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             onMouseDown={(event) => {
               if (event && event.activeLabel) {
@@ -245,15 +257,6 @@ const MainChart = () => {
                 />
               </linearGradient>
             </defs>
-            <text
-              x={170}
-              y={20}
-              fill='white'
-              textAnchor='middle'
-              dominantBaseline='central'
-            >
-              <tspan fontSize='20'>{selectedTableName1}</tspan>
-            </text>
             <CartesianGrid
               stroke='#fff'
               strokeDasharray='3 3'
@@ -313,139 +316,6 @@ const MainChart = () => {
                 padding: '0 1rem',
                 opacity: 0.8,
               }}
-            />
-            <Legend
-              payload={[
-                { value: 'T [°C]', color: '#2fc4ff', type: 'line' },
-                { value: 'ET0 [mm]', color: '#3467c4', type: 'line' },
-              ]}
-            />
-            {refAreaLeft && refAreaRight ? (
-              <ReferenceArea
-                yAxisId='T'
-                x1={refAreaLeft}
-                x2={refAreaRight}
-                fillOpacity={0.3}
-              />
-            ) : null}
-          </ComposedChart>
-        </ResponsiveContainer>
-        <ResponsiveContainer
-          width='100%'
-          height={300}
-        >
-          <ComposedChart
-            syncId='tables'
-            title={selectedTableName2}
-            width={900}
-            height={300}
-            data={refTable2}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            onMouseDown={(event) => {
-              if (event && event.activeLabel) {
-                setRefAreaLeft(event.activeLabel);
-              }
-            }}
-            onMouseMove={(event) => {
-              if (event && event.activeLabel && refAreaLeft !== '') {
-                setRefAreaRight(event.activeLabel);
-              }
-            }}
-            onMouseUp={zoom}
-          >
-            <defs>
-              <linearGradient
-                id='colorT'
-                x1='0'
-                y1='0'
-                x2='0'
-                y2='1'
-              >
-                <stop
-                  offset='5%'
-                  stopColor='#008064'
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset='95%'
-                  stopColor='#008064'
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
-            <text
-              x={170}
-              y={20}
-              fill='white'
-              textAnchor='middle'
-              dominantBaseline='central'
-            >
-              <tspan fontSize='20'>{selectedTableName2}</tspan>
-            </text>
-            <CartesianGrid
-              strokeDasharray='3 3'
-              horizontalPoints={[5, 80, 160]}
-            />
-            <XAxis
-              dataKey='date'
-              padding='gap'
-              domain={[left, right]}
-              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20, stroke: '#fff', dx: -60 }}
-              tickCount={10}
-              tick={{ fill: '#fff' }}
-              tickLine={{ stroke: '#fff' }}
-            />
-            <YAxis
-              dataKey='T'
-              yAxisId='T'
-              padding={{ bottom: 10, top: 10 }}
-              domain={[bottom as number, top as number]}
-              label={{ value: 'Temperatura', angle: -90, position: 'left', stroke: '#fff', dy: -45 }}
-              tick={{ fill: '#fff' }}
-              tickLine={{ stroke: '#fff' }}
-            />
-            <YAxis
-              dataKey='ET0'
-              yAxisId='ET0'
-              orientation='right'
-              padding={{ bottom: 10, top: 10 }}
-              domain={[0, 10]}
-              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right', stroke: '#fff', dy: -65 }}
-              tick={{ fill: '#fff' }}
-              tickLine={{ stroke: '#fff' }}
-            />
-            <Area
-              type='monotone'
-              dataKey='ET0'
-              yAxisId='ET0'
-              stroke='#008064'
-              fill='url(#colorT)'
-              animationDuration={300}
-              dot={false}
-            />
-            <Line
-              type='monotone'
-              dataKey='T'
-              yAxisId='T'
-              stroke='#2be2a5'
-              strokeWidth={2}
-              animationDuration={300}
-              dot={false}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              wrapperStyle={{
-                color: '#fff',
-                backgroundColor: '#000',
-                padding: '0 1rem',
-                opacity: 0.8,
-              }}
-            />
-            <Legend
-              payload={[
-                { value: 'T [°C]', color: '#2be2a5', type: 'line' },
-                { value: 'ET0 [mm]', color: '#008064', type: 'line' },
-              ]}
             />
             {refAreaLeft && refAreaRight ? (
               <ReferenceArea
