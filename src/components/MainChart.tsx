@@ -16,7 +16,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
 
-import { setSelectedTableName1, setSelectedTableName2, setTable1, setTable2 } from '../features/table/tablesSlice';
+import { setSelectedTableNames, setSelectedTables } from '../features/table/tablesSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { getAxisYDomain, setRefTables } from '../utils';
 import CustomTooltip from './CustomTooltip';
@@ -26,7 +26,8 @@ import { DB_NAMES } from '../constants';
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
-  const [selectedTableNamesT, setSelectedTableNamesT] = useState<string[]>([]);
+  const [selectedTableNames, setSelectedTableNames] = useState<string[]>(['byd_2021_wdk']);
+  const [currentTables, setCurrentTables] = useState<ITableRow[][]>([]);
   const [currentTableT, setCurrentTableT] = useState<ITableRow[]>([]);
   const [currentTable2, setCurrentTable2] = useState<ITableRow[]>([]);
   const [refTableT, setRefTableT] = useState<ITableRow[]>([]);
@@ -102,18 +103,27 @@ const MainChart = () => {
   //   });
   // };
 
-  // useEffect(() => {
-  //   getDbTable(selectedTableName1)
-  //     .then((newData: ITableRow[]) => {
-  //       const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
-  //       setTop(newTop);
-  //       setBottom(newBottom);
-  //       dispatch(setTable1({ newTable: newData }));
-  //       setcurrentTableT(newData);
-  //       setRefTableT(newData);
-  //     })
-  //     .catch((error) => console.error(error));
-  // }, [selectedTableName1]);
+  useEffect(() => {
+    let newTables: ITableRow[][] = [];
+    _.forEach(selectedTableNames, (tableName) => {
+      getDbTable(tableName)
+        .then((newData: ITableRow[]) => {
+          const [newBottom, newTop] = getAxisYDomain(
+            newData,
+            newData[0].date,
+            newData[newData.length - 1].date,
+            'T',
+            1
+          );
+          setTop(newTop);
+          setBottom(newBottom);
+          newTables = [...newTables, newData];
+        })
+        .catch((error) => console.error(error));
+    });
+    setCurrentTables(newTables);
+    dispatch(setSelectedTables({ newTables }));
+  }, [selectedTableNames]);
 
   // useEffect(() => {
   //   getDbTable(selectedTableName2)
@@ -168,10 +178,10 @@ const MainChart = () => {
           <InputLabel id='table-select-label'>Wybierz lata</InputLabel>
           <Select
             multiple
-            value={selectedTableNamesT}
+            value={selectedTableNames}
             onChange={(event: SelectChangeEvent<string[]>) => {
               if (typeof event.target.value === 'string') return;
-              setSelectedTableNamesT(event.target.value);
+              setSelectedTableNames(event.target.value);
             }}
           >
             {DB_NAMES.map((name) => (
@@ -280,7 +290,7 @@ const MainChart = () => {
               tick={{ fill: '#fff' }}
               tickLine={{ stroke: '#fff' }}
             />
-            <YAxis
+            {/* <YAxis
               dataKey='ET0'
               yAxisId='ET0'
               orientation='right'
@@ -289,8 +299,8 @@ const MainChart = () => {
               label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right', stroke: '#fff', dy: -65 }}
               tick={{ fill: '#fff' }}
               tickLine={{ stroke: '#fff' }}
-            />
-            <Area
+            /> */}
+            {/* <Area
               type='monotone'
               dataKey='ET0'
               yAxisId='ET0'
@@ -298,7 +308,7 @@ const MainChart = () => {
               fill='url(#colorEt0)'
               animationDuration={300}
               dot={false}
-            />
+            /> */}
             <Line
               type='monotone'
               dataKey='T'

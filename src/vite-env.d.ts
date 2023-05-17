@@ -35,10 +35,8 @@ interface IDataRow {
 }
 
 interface TableState {
-  currentTable1: ITableRow[];
-  currentTable2: ITableRow[];
-  selectedTableName1: string;
-  selectedTableName2: string;
+  selectedTableNames: string[];
+  selectedTables: ITableRow[][];
 }
 
 interface IHandleChangeSelectChangeProps {
