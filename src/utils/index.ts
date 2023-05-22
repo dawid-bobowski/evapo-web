@@ -65,7 +65,7 @@ export const convertDate = (date: string): string => {
  * @returns array consisting of bottom and top Y axis domain values.
  */
 export const getAxisYDomain = (
-  data: ITableRow[],
+  data: ITableRow[] | ITempChartDataRow[],
   from: string,
   to: string,
   field: keyof ITableRow,
@@ -73,11 +73,11 @@ export const getAxisYDomain = (
 ): number[] => {
   const startIndex: number = data.findIndex((item) => item.Data === from);
   const endIndex: number = data.findIndex((item) => item.Data === to);
-  const refData: ITableRow[] = data.slice(startIndex, endIndex + 1);
+  const refData: ITableRow[] | ITempChartDataRow[] = data.slice(startIndex, endIndex + 1);
   let [bottom, top]: [bottom: number | string, top: number | string] = [refData[0][field] || 0, refData[0][field] || 0];
 
   if (refData.length > 0) {
-    refData.forEach((d: ITableRow) => {
+    refData.forEach((d: ITableRow | ITempChartDataRow) => {
       const fieldValue: string | number | null = d[field];
 
       if (fieldValue && fieldValue > top) top = fieldValue;

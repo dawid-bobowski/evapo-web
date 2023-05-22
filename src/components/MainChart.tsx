@@ -32,8 +32,9 @@ const MainChart = () => {
   const [selectedCharts, setSelectedCharts] = useState<ITableRow[][]>(
     useAppSelector((state) => state.tables.selectedTables)
   );
-  const [mainChartData, setMainChartData] = useState<ITableRow[]>([]);
-  const [refTableT, setRefTableT] = useState<ITableRow[]>([]);
+  const [tempChartData, setTempChartData] = useState<ITempChartDataRow[]>([]);
+  const [refTableT, setRefTableT] = useState<ITempChartDataRow[]>([]);
+
   const [refAreaLeft, setRefAreaLeft] = useState<string>('');
   const [refAreaRight, setRefAreaRight] = useState<string>('');
   const [left, setLeft] = useState<string>('');
@@ -55,12 +56,12 @@ const MainChart = () => {
     let refLeft = refAreaLeft;
     let refRight = refAreaRight;
     let refAreaLeftIndex = _.indexOf(
-      mainChartData,
-      mainChartData.find((el) => el.Data === refAreaLeft)
+      tempChartData,
+      tempChartData.find((el) => el.Data === refAreaLeft)
     );
     let refAreaRightIndex = _.indexOf(
-      mainChartData,
-      mainChartData.find((el) => el.Data === refAreaRight)
+      tempChartData,
+      tempChartData.find((el) => el.Data === refAreaRight)
     );
 
     if (refAreaLeftIndex > refAreaRightIndex) {
@@ -69,9 +70,9 @@ const MainChart = () => {
     }
     if (refLeft === '' || refRight === '') return;
     // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(mainChartData, refLeft, refRight, 'T', 1);
+    const [newBottom, newTop] = getAxisYDomain(tempChartData, refLeft, refRight, 'T', 1);
 
-    setRefTableT(mainChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+    setRefTableT(tempChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
     setRefAreaRight('');
     setLeft(refLeft);
@@ -115,14 +116,20 @@ const MainChart = () => {
             })
           );
           setSelectedCharts([...selectedCharts, newData]);
+          const year: string = tableName.replace(/\D/g, '');
+          const newTempChartData: ITempChartDataRow[] = newData.map((data) => ({
+            Data: data.Data.slice(5),
+            [`T${year}`]: data.T,
+          }));
+          setTempChartData(newTempChartData);
         })
         .catch((error) => console.error(error));
     });
   }, []);
 
   useEffect(() => {
-    console.log(selectedCharts);
-  }, [selectedCharts]);
+    console.log(tempChartData);
+  }, [tempChartData]);
 
   // useEffect(() => {
   //   setRefTables({
@@ -196,6 +203,12 @@ const MainChart = () => {
                     (bottom === null || newBottom > bottom) && setBottom(newBottom);
                     dispatch(setSelectedTables({ newTables: [...selectedCharts, newData] }));
                     setSelectedCharts([...selectedCharts, newData]);
+                    const year: string = addedChart[0].replace(/\D/g, '');
+                    const newTempChartData: ITempChartDataRow[] = tempChartData.map((dataRow, idx) => ({
+                      ...dataRow,
+                      [`T${year}`]: newData[idx].T,
+                    }));
+                    setTempChartData(newTempChartData);
                   })
                   .catch((error) => console.error(error));
               }
@@ -216,6 +229,20 @@ const MainChart = () => {
                   setTop(newTop);
                   setBottom(newBottom);
                 });
+                const year: string = deletedChart[0].replace(/\D/g, '');
+                let newTempChartData: ITempChartDataRow[] = tempChartData.map((dataRow) => {
+                  const keys: string[] = Object.keys(dataRow)
+                    .filter((key) => key.slice(1) !== year)
+                    .filter((key) => key.slice(1) !== 'Data');
+                  let newRowData: ITempChartDataRow = {
+                    Data: dataRow.Data,
+                  };
+                  _.forEach(keys, (key) => {
+                    newRowData[key as keyof ITempChartDataRow] = dataRow[key as keyof ITempChartDataRow];
+                  });
+                  return newRowData;
+                });
+                setTempChartData(newTempChartData);
               }
             }}
           >
