@@ -8,19 +8,17 @@ import {
   ReferenceArea,
   ResponsiveContainer,
   ComposedChart,
-  Area,
 } from 'recharts';
-import { useEffect, useRef, useState } from 'react';
-import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
 
 import { setSelectedTableNames, setSelectedTables } from '../features/table/tablesSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { getAxisYDomain, setRefTables } from '../utils';
+import { getAxisYDomain } from '../utils';
 import CustomTooltip from './CustomTooltip';
-import TableSelect from './TableSelect';
 import { getDbTable } from '../api';
 import { DB_NAMES } from '../constants';
 
@@ -33,7 +31,7 @@ const MainChart = () => {
     useAppSelector((state) => state.tables.selectedTables)
   );
   const [tempChartData, setTempChartData] = useState<ITempChartDataRow[]>([]);
-  const [refTableT, setRefTableT] = useState<ITempChartDataRow[]>([]);
+  const [tempChartRef, setTempChartRef] = useState<ITempChartDataRow[]>([]);
 
   const [refAreaLeft, setRefAreaLeft] = useState<string>('');
   const [refAreaRight, setRefAreaRight] = useState<string>('');
@@ -70,9 +68,9 @@ const MainChart = () => {
     }
     if (refLeft === '' || refRight === '') return;
     // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(tempChartData, refLeft, refRight, 'T', 1);
+    const [newBottom, newTop] = getAxisYDomain(tempChartData, refLeft, refRight, 1);
 
-    setRefTableT(tempChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+    setTempChartRef(tempChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
     setRefAreaRight('');
     setLeft(refLeft);
@@ -84,28 +82,40 @@ const MainChart = () => {
   /**
    * Resets zoom on both tables.
    */
-  // const resetZoom = () => {
-  //   setRefTables({
-  //     currentTableT,
-  //     currentTable2,
-  //     setLeft,
-  //     setRight,
-  //     setTop,
-  //     setBottom,
-  //     setRefTableT,
-  //     setRefTable2,
-  //   });
-  // };
+  const resetZoom = () => {
+    const [newBottom, newTop] = getAxisYDomain(
+      tempChartData,
+      tempChartData[0].Data,
+      tempChartData[tempChartData.length - 1].Data,
+      1
+    );
+    setTop(newTop);
+    setBottom(newBottom);
+    setTempChartRef(tempChartData);
+    setRefAreaLeft('');
+    setRefAreaRight('');
+    setLeft(tempChartData[0].Data);
+    setRight(tempChartData[tempChartData.length - 1].Data);
+    setTop(newTop);
+    setBottom(newBottom);
+  };
 
   useEffect(() => {
     _.forEach(selectedChartNames, (tableName) => {
       getDbTable(tableName)
         .then((newData: ITableRow[]) => {
+          setSelectedCharts([...selectedCharts, newData]);
+          const year: string = tableName.replace(/\D/g, '');
+          const newTempChartData: ITempChartDataRow[] = newData.map((data) => ({
+            Data: data.Data.slice(5),
+            [`T${year}`]: data.T,
+          }));
+          setTempChartData(newTempChartData);
+          setTempChartRef(newTempChartData);
           const [newBottom, newTop] = getAxisYDomain(
-            newData,
-            newData[0].Data,
-            newData[newData.length - 1].Data,
-            'T',
+            newTempChartData,
+            newTempChartData[0].Data,
+            newTempChartData[newTempChartData.length - 1].Data,
             1
           );
           setTop(newTop);
@@ -115,34 +125,14 @@ const MainChart = () => {
               newTables: [...selectedCharts, newData],
             })
           );
-          setSelectedCharts([...selectedCharts, newData]);
-          const year: string = tableName.replace(/\D/g, '');
-          const newTempChartData: ITempChartDataRow[] = newData.map((data) => ({
-            Data: data.Data.slice(5),
-            [`T${year}`]: data.T,
-          }));
-          setTempChartData(newTempChartData);
         })
         .catch((error) => console.error(error));
     });
   }, []);
 
   useEffect(() => {
-    console.log(tempChartData);
+    // console.log(tempChartData);
   }, [tempChartData]);
-
-  // useEffect(() => {
-  //   setRefTables({
-  //     currentTableT,
-  //     currentTable2,
-  //     setLeft,
-  //     setRight,
-  //     setTop,
-  //     setBottom,
-  //     setRefTableT,
-  //     setRefTable2,
-  //   });
-  // }, [currentTableT, currentTable2]);
 
   return (
     <Box id='main-window'>
@@ -192,15 +182,6 @@ const MainChart = () => {
               if (!_.isEmpty(addedChart)) {
                 getDbTable(addedChart[0])
                   .then((newData: ITableRow[]) => {
-                    const [newBottom, newTop] = getAxisYDomain(
-                      newData,
-                      newData[0].Data,
-                      newData[newData.length - 1].Data,
-                      'T',
-                      1
-                    );
-                    (top === null || newTop > top) && setTop(newTop);
-                    (bottom === null || newBottom > bottom) && setBottom(newBottom);
                     dispatch(setSelectedTables({ newTables: [...selectedCharts, newData] }));
                     setSelectedCharts([...selectedCharts, newData]);
                     const year: string = addedChart[0].replace(/\D/g, '');
@@ -209,6 +190,15 @@ const MainChart = () => {
                       [`T${year}`]: newData[idx].T,
                     }));
                     setTempChartData(newTempChartData);
+                    setTempChartRef(newTempChartData);
+                    const [newBottom, newTop] = getAxisYDomain(
+                      newTempChartData,
+                      newTempChartData[0].Data,
+                      newTempChartData[newTempChartData.length - 1].Data,
+                      1
+                    );
+                    setTop(newTop);
+                    setBottom(newBottom);
                   })
                   .catch((error) => console.error(error));
               }
@@ -223,7 +213,6 @@ const MainChart = () => {
                     updatedTable,
                     updatedTable[0].Data,
                     updatedTable[updatedTable.length - 1].Data,
-                    'T',
                     1
                   );
                   setTop(newTop);
@@ -243,6 +232,14 @@ const MainChart = () => {
                   return newRowData;
                 });
                 setTempChartData(newTempChartData);
+                const [newBottom, newTop] = getAxisYDomain(
+                  newTempChartData,
+                  newTempChartData[0].Data,
+                  newTempChartData[newTempChartData.length - 1].Data,
+                  1
+                );
+                setTop(newTop);
+                setBottom(newBottom);
               }
             }}
           >
@@ -257,7 +254,7 @@ const MainChart = () => {
           </Select>
         </FormControl>
         <Button
-          // onClick={resetZoom}
+          onClick={resetZoom}
           sx={{
             width: 80,
             lineHeight: 1.5,
@@ -292,10 +289,9 @@ const MainChart = () => {
           height={300}
         >
           <ComposedChart
-            syncId='tables'
             width={900}
             height={300}
-            data={refTableT}
+            data={tempChartRef}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             onMouseDown={(event) => {
               if (event && event.activeLabel) {
@@ -335,7 +331,7 @@ const MainChart = () => {
               horizontalPoints={[5, 80, 160]}
             />
             <XAxis
-              dataKey='date'
+              dataKey='Data'
               padding='gap'
               domain={[left, right]}
               label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20, stroke: '#fff', dx: -60 }}
@@ -344,7 +340,7 @@ const MainChart = () => {
               tickLine={{ stroke: '#fff' }}
             />
             <YAxis
-              dataKey='T'
+              dataKey='T2021'
               yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
               domain={[bottom as number, top as number]}
@@ -352,34 +348,23 @@ const MainChart = () => {
               tick={{ fill: '#fff' }}
               tickLine={{ stroke: '#fff' }}
             />
-            {/* <YAxis
-              dataKey='ET0'
-              yAxisId='ET0'
-              orientation='right'
-              padding={{ bottom: 10, top: 10 }}
-              domain={[0, 10]}
-              label={{ value: 'Ewapotranspiracja', angle: 90, position: 'right', stroke: '#fff', dy: -65 }}
-              tick={{ fill: '#fff' }}
-              tickLine={{ stroke: '#fff' }}
-            /> */}
-            {/* <Area
-              type='monotone'
-              dataKey='ET0'
-              yAxisId='ET0'
-              stroke='#3467c4'
-              fill='url(#colorEt0)'
-              animationDuration={300}
-              dot={false}
-            /> */}
-            <Line
-              type='monotone'
-              dataKey='T'
-              yAxisId='T'
-              stroke='#2fc4ff'
-              strokeWidth={2}
-              animationDuration={300}
-              dot={false}
-            />
+            {!_.isEmpty(tempChartData) &&
+              Object.keys(tempChartData[0])
+                .filter((key) => key !== 'Data')
+                .map((key) => {
+                  return (
+                    <Line
+                      key={key}
+                      type='monotone'
+                      dataKey={key}
+                      yAxisId='T'
+                      stroke='#2fc4ff'
+                      strokeWidth={2}
+                      animationDuration={300}
+                      dot={false}
+                    />
+                  );
+                })}
             <Tooltip
               content={<CustomTooltip />}
               wrapperStyle={{

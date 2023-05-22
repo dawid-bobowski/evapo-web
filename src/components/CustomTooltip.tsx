@@ -5,26 +5,18 @@ import _ from 'lodash';
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
-    const T: Payload<ValueType, NameType> | undefined = payload.find((field) => field.name === 'T');
-    const ET0: Payload<ValueType, NameType> | undefined = payload.find((field) => field.name === 'ET0');
     return (
       <Box className='custom-tooltip'>
         <p>
           <span style={{ fontWeight: 'bold' }}>Dzień: </span>
           {label}
         </p>
-        {T && (
-          <p>
-            <span style={{ fontWeight: 'bold' }}>T: </span>
-            {T.value} °C
+        {payload.map((data) => (
+          <p key={data.dataKey}>
+            <span style={{ fontWeight: 'bold' }}>{(data.dataKey as string).slice(1)}: </span>
+            {data.payload[data.dataKey as string]} °C
           </p>
-        )}
-        {ET0 && (
-          <p>
-            <span style={{ fontWeight: 'bold' }}>ET0: </span>
-            {ET0.value} mm
-          </p>
-        )}
+        ))}
       </Box>
     );
   }
