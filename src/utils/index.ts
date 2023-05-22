@@ -71,8 +71,8 @@ export const getAxisYDomain = (
   field: keyof ITableRow,
   offset: number
 ): number[] => {
-  const startIndex: number = data.findIndex((item) => item.date === from);
-  const endIndex: number = data.findIndex((item) => item.date === to);
+  const startIndex: number = data.findIndex((item) => item.Data === from);
+  const endIndex: number = data.findIndex((item) => item.Data === to);
   const refData: ITableRow[] = data.slice(startIndex, endIndex + 1);
   let [bottom, top]: [bottom: number | string, top: number | string] = [refData[0][field] || 0, refData[0][field] || 0];
 
@@ -95,10 +95,10 @@ export const getAxisYDomain = (
  * @returns object with start and end dates.
  */
 export const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): IDateRange => {
-  let from: string = data1[0].date;
-  let to: string = data1[data1.length - 1].date;
-  if (from < data2[0].date) from = data2[0].date;
-  if (to > data2[data2.length - 1].date) to = data2[data2.length - 1].date;
+  let from: string = data1[0].Data;
+  let to: string = data1[data1.length - 1].Data;
+  if (from < data2[0].Data) from = data2[0].Data;
+  if (to > data2[data2.length - 1].Data) to = data2[data2.length - 1].Data;
   return { from, to };
 };
 
@@ -132,14 +132,14 @@ export const setRefTables = (props: ISetRefTablesProps) => {
     // set ref tables
     const firstDataIndex1: number | undefined = _.findIndex(
       currentTable1,
-      (data) => data.date === calculatedRange.from
+      (data) => data.Data === calculatedRange.from
     );
     const firstDataIndex2: number | undefined = _.findIndex(
       currentTable2,
-      (data) => data.date === calculatedRange.from
+      (data) => data.Data === calculatedRange.from
     );
-    const lastDataIndex1: number | undefined = _.findIndex(currentTable1, (data) => data.date === calculatedRange.to);
-    const lastDataIndex2: number | undefined = _.findIndex(currentTable2, (data) => data.date === calculatedRange.to);
+    const lastDataIndex1: number | undefined = _.findIndex(currentTable1, (data) => data.Data === calculatedRange.to);
+    const lastDataIndex2: number | undefined = _.findIndex(currentTable2, (data) => data.Data === calculatedRange.to);
     const newRefTable1: ITableRow[] = _.slice(currentTable1, firstDataIndex1, lastDataIndex1 + 1);
     const newRefTable2: ITableRow[] = _.slice(currentTable2, firstDataIndex2, lastDataIndex2 + 1);
     setRefTable1(newRefTable1);

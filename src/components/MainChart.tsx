@@ -10,7 +10,7 @@ import {
   ComposedChart,
   Area,
 } from 'recharts';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormControl, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -26,26 +26,20 @@ import { DB_NAMES } from '../constants';
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
-  const [selectedTableNames, setSelectedTableNames] = useState<string[]>(['byd_2021_wdk']);
-  const [currentTables, setCurrentTables] = useState<ITableRow[][]>([]);
-  const [currentTableT, setCurrentTableT] = useState<ITableRow[]>([]);
-  const [currentTable2, setCurrentTable2] = useState<ITableRow[]>([]);
+  const [selectedChartNames, setSelectedChartNames] = useState<string[]>(
+    useAppSelector((state) => state.tables.selectedTableNames)
+  );
+  const [selectedCharts, setSelectedCharts] = useState<ITableRow[][]>(
+    useAppSelector((state) => state.tables.selectedTables)
+  );
+  const [mainChartData, setMainChartData] = useState<ITableRow[]>([]);
   const [refTableT, setRefTableT] = useState<ITableRow[]>([]);
-  const [refTable2, setRefTable2] = useState<ITableRow[]>([]);
   const [refAreaLeft, setRefAreaLeft] = useState<string>('');
   const [refAreaRight, setRefAreaRight] = useState<string>('');
   const [left, setLeft] = useState<string>('');
   const [right, setRight] = useState<string>('');
   const [top, setTop] = useState<number | null>(null);
   const [bottom, setBottom] = useState<number | null>(null);
-
-  const handleChange = (props: IHandleChangeSelectChangeProps) => {
-    const { event, setSelectedTableName, setTable } = props;
-    dispatch(setSelectedTableName({ newSelectedTableName: event.target.value }));
-    getDbTable(event.target.value)
-      .then((newData) => dispatch(setTable({ newTable: newData })))
-      .catch((error) => console.error(error));
-  };
 
   /**
    * Performs zoom in on both tables.
@@ -61,12 +55,12 @@ const MainChart = () => {
     let refLeft = refAreaLeft;
     let refRight = refAreaRight;
     let refAreaLeftIndex = _.indexOf(
-      currentTableT,
-      currentTableT.find((el) => el.date === refAreaLeft)
+      mainChartData,
+      mainChartData.find((el) => el.Data === refAreaLeft)
     );
     let refAreaRightIndex = _.indexOf(
-      currentTableT,
-      currentTableT.find((el) => el.date === refAreaRight)
+      mainChartData,
+      mainChartData.find((el) => el.Data === refAreaRight)
     );
 
     if (refAreaLeftIndex > refAreaRightIndex) {
@@ -75,10 +69,9 @@ const MainChart = () => {
     }
     if (refLeft === '' || refRight === '') return;
     // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(currentTableT, refLeft, refRight, 'T', 1);
+    const [newBottom, newTop] = getAxisYDomain(mainChartData, refLeft, refRight, 'T', 1);
 
-    setRefTableT(currentTableT.slice(refAreaLeftIndex, refAreaRightIndex + 1));
-    setRefTable2(currentTable2.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+    setRefTableT(mainChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1));
     setRefAreaLeft('');
     setRefAreaRight('');
     setLeft(refLeft);
@@ -104,39 +97,32 @@ const MainChart = () => {
   // };
 
   useEffect(() => {
-    let newTables: ITableRow[][] = [];
-    _.forEach(selectedTableNames, (tableName) => {
+    _.forEach(selectedChartNames, (tableName) => {
       getDbTable(tableName)
         .then((newData: ITableRow[]) => {
           const [newBottom, newTop] = getAxisYDomain(
             newData,
-            newData[0].date,
-            newData[newData.length - 1].date,
+            newData[0].Data,
+            newData[newData.length - 1].Data,
             'T',
             1
           );
           setTop(newTop);
           setBottom(newBottom);
-          newTables = [...newTables, newData];
+          dispatch(
+            setSelectedTables({
+              newTables: [...selectedCharts, newData],
+            })
+          );
+          setSelectedCharts([...selectedCharts, newData]);
         })
         .catch((error) => console.error(error));
     });
-    setCurrentTables(newTables);
-    dispatch(setSelectedTables({ newTables }));
-  }, [selectedTableNames]);
+  }, []);
 
-  // useEffect(() => {
-  //   getDbTable(selectedTableName2)
-  //     .then((newData: ITableRow[]) => {
-  //       const [newBottom, newTop] = getAxisYDomain(newData, newData[0].date, newData[newData.length - 1].date, 'T', 1);
-  //       setTop(newTop);
-  //       setBottom(newBottom);
-  //       dispatch(setTable2({ newTable: newData }));
-  //       setCurrentTable2(newData);
-  //       setRefTable2(newData);
-  //     })
-  //     .catch((error) => console.error(error));
-  // }, [selectedTableName2]);
+  useEffect(() => {
+    console.log(selectedCharts);
+  }, [selectedCharts]);
 
   // useEffect(() => {
   //   setRefTables({
@@ -178,10 +164,59 @@ const MainChart = () => {
           <InputLabel id='table-select-label'>Wybierz lata</InputLabel>
           <Select
             multiple
-            value={selectedTableNames}
+            value={selectedChartNames}
             onChange={(event: SelectChangeEvent<string[]>) => {
-              if (typeof event.target.value === 'string') return;
-              setSelectedTableNames(event.target.value);
+              if (typeof event.target.value === 'string') {
+                return;
+              } else if (_.isEmpty(event.target.value)) {
+                setTop(null);
+                setBottom(null);
+                dispatch(
+                  setSelectedTables({
+                    newTables: [],
+                  })
+                );
+                setSelectedCharts([]);
+              }
+              setSelectedChartNames(event.target.value);
+              setSelectedTableNames({ newNames: event.target.value });
+              let addedChart: string[] = _.difference(event.target.value, selectedChartNames);
+              let deletedChart: string[] = _.difference(selectedChartNames, event.target.value);
+              if (!_.isEmpty(addedChart)) {
+                getDbTable(addedChart[0])
+                  .then((newData: ITableRow[]) => {
+                    const [newBottom, newTop] = getAxisYDomain(
+                      newData,
+                      newData[0].Data,
+                      newData[newData.length - 1].Data,
+                      'T',
+                      1
+                    );
+                    (top === null || newTop > top) && setTop(newTop);
+                    (bottom === null || newBottom > bottom) && setBottom(newBottom);
+                    dispatch(setSelectedTables({ newTables: [...selectedCharts, newData] }));
+                    setSelectedCharts([...selectedCharts, newData]);
+                  })
+                  .catch((error) => console.error(error));
+              }
+              if (!_.isEmpty(deletedChart)) {
+                const updatedTables: ITableRow[][] = selectedCharts.filter(
+                  (chart) => deletedChart[0].replace(/\D/g, '') !== chart[0].Data.slice(0, 4)
+                );
+                dispatch(setSelectedTables({ newTables: updatedTables }));
+                setSelectedCharts(updatedTables);
+                _.forEach(updatedTables, (updatedTable) => {
+                  const [newBottom, newTop] = getAxisYDomain(
+                    updatedTable,
+                    updatedTable[0].Data,
+                    updatedTable[updatedTable.length - 1].Data,
+                    'T',
+                    1
+                  );
+                  setTop(newTop);
+                  setBottom(newBottom);
+                });
+              }
             }}
           >
             {DB_NAMES.map((name) => (

@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ITableRow {
-  date: string;
+  Data: string;
   T: number;
   RH: number;
   V: number;
