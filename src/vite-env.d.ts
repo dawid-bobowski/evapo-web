@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ITableRow {
-  date: string;
+  Data: string;
   T: number;
   RH: number;
   V: number;
@@ -15,6 +15,11 @@ interface ITableRow {
   RNL: number;
   RNS: number;
   ET0: number;
+}
+
+interface ITempChartDataRow {
+  Data: string;
+  [key: typeof string]: number;
 }
 
 interface IDataRow {
@@ -35,10 +40,8 @@ interface IDataRow {
 }
 
 interface TableState {
-  currentTable1: ITableRow[];
-  currentTable2: ITableRow[];
-  selectedTableName1: string;
-  selectedTableName2: string;
+  selectedTableNames: string[];
+  selectedTables: ITableRow[][];
 }
 
 interface IHandleChangeSelectChangeProps {

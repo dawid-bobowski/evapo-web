@@ -60,30 +60,32 @@ export const convertDate = (date: string): string => {
  * @param data table data.
  * @param from date from which to start calculation.
  * @param to date to which calculation should be done.
- * @param field name of the field to be considered in calculation.
  * @param offset value of Y axis domain offset.
  * @returns array consisting of bottom and top Y axis domain values.
  */
 export const getAxisYDomain = (
-  data: ITableRow[],
+  data: ITableRow[] | ITempChartDataRow[],
   from: string,
   to: string,
-  field: keyof ITableRow,
   offset: number
 ): number[] => {
-  const startIndex: number = data.findIndex((item) => item.date === from);
-  const endIndex: number = data.findIndex((item) => item.date === to);
-  const refData: ITableRow[] = data.slice(startIndex, endIndex + 1);
-  let [bottom, top]: [bottom: number | string, top: number | string] = [refData[0][field] || 0, refData[0][field] || 0];
+  const startIndex: number = data.findIndex((item) => item.Data === from);
+  const endIndex: number = data.findIndex((item) => item.Data === to);
+  const refData: ITableRow[] | ITempChartDataRow[] = data.slice(startIndex, endIndex + 1);
+  const keys: string[] = Object.keys(refData[0]).filter((key) => key !== 'Data');
 
-  if (refData.length > 0) {
-    refData.forEach((d: ITableRow) => {
-      const fieldValue: string | number | null = d[field];
+  let [bottom, top]: [bottom: number | string, top: number | string] = [
+    refData[0][keys[0] as keyof ITempChartDataRow] || 0,
+    refData[0][keys[0] as keyof ITempChartDataRow] || 0,
+  ];
 
+  _.forEach(refData, (rowData) => {
+    _.forEach(keys, (key) => {
+      const fieldValue: string | number | null = rowData[key as keyof ITempChartDataRow];
       if (fieldValue && fieldValue > top) top = fieldValue;
       if (fieldValue && fieldValue < bottom) bottom = fieldValue;
     });
-  }
+  });
 
   return [_.round((bottom as number | 0) - offset, 1), _.round((top as number | 0) + offset, 1)];
 };
@@ -95,54 +97,9 @@ export const getAxisYDomain = (
  * @returns object with start and end dates.
  */
 export const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): IDateRange => {
-  let from: string = data1[0].date;
-  let to: string = data1[data1.length - 1].date;
-  if (from < data2[0].date) from = data2[0].date;
-  if (to > data2[data2.length - 1].date) to = data2[data2.length - 1].date;
+  let from: string = data1[0].Data;
+  let to: string = data1[data1.length - 1].Data;
+  if (from < data2[0].Data) from = data2[0].Data;
+  if (to > data2[data2.length - 1].Data) to = data2[data2.length - 1].Data;
   return { from, to };
-};
-
-interface ISetRefTablesProps {
-  currentTable1: ITableRow[];
-  currentTable2: ITableRow[];
-  setLeft: React.Dispatch<React.SetStateAction<string>>;
-  setRight: React.Dispatch<React.SetStateAction<string>>;
-  setTop: React.Dispatch<React.SetStateAction<number | null>>;
-  setBottom: React.Dispatch<React.SetStateAction<number | null>>;
-  setRefTable1: React.Dispatch<React.SetStateAction<ITableRow[]>>;
-  setRefTable2: React.Dispatch<React.SetStateAction<ITableRow[]>>;
-}
-
-export const setRefTables = (props: ISetRefTablesProps) => {
-  const { currentTable1, currentTable2, setLeft, setRight, setTop, setBottom, setRefTable1, setRefTable2 } = props;
-  if (!_.isEmpty(currentTable1) && !_.isEmpty(currentTable2)) {
-    // set new dates to match both tables
-    const calculatedRange: IDateRange = calculateDateRange(currentTable1, currentTable2);
-    setLeft(calculatedRange.from);
-    setRight(calculatedRange.to);
-
-    // set new top and bottom domains
-    const [newTop1, newBottom1] = getAxisYDomain(currentTable1, calculatedRange.from, calculatedRange.to, 'T', 1);
-    const [newTop2, newBottom2] = getAxisYDomain(currentTable2, calculatedRange.from, calculatedRange.to, 'T', 1);
-    const newTop = newTop1 > newTop2 ? newTop1 : newTop2;
-    const newBottom = newBottom1 > newBottom2 ? newBottom1 : newBottom2;
-    setTop(newTop);
-    setBottom(newBottom);
-
-    // set ref tables
-    const firstDataIndex1: number | undefined = _.findIndex(
-      currentTable1,
-      (data) => data.date === calculatedRange.from
-    );
-    const firstDataIndex2: number | undefined = _.findIndex(
-      currentTable2,
-      (data) => data.date === calculatedRange.from
-    );
-    const lastDataIndex1: number | undefined = _.findIndex(currentTable1, (data) => data.date === calculatedRange.to);
-    const lastDataIndex2: number | undefined = _.findIndex(currentTable2, (data) => data.date === calculatedRange.to);
-    const newRefTable1: ITableRow[] = _.slice(currentTable1, firstDataIndex1, lastDataIndex1 + 1);
-    const newRefTable2: ITableRow[] = _.slice(currentTable2, firstDataIndex2, lastDataIndex2 + 1);
-    setRefTable1(newRefTable1);
-    setRefTable2(newRefTable2);
-  }
 };

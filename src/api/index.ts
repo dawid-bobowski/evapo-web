@@ -6,20 +6,5 @@ export const getDbTable = async (selectedTableName: string): Promise<ITableRow[]
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const data: IDataRow[] = await response.json();
-  const parsedData: ITableRow[] = data.map((row: IDataRow) => {
-    let parsedRow = {
-      ...row,
-      date: row.Data.slice(5),
-    };
-    // const Et0: number | null = calculateEvapo({
-    //   RH: parsedRow.RH,
-    //   R_a: parsedRow.Ra,
-    //   R_s: parsedRow.Rs,
-    //   T: parsedRow.T,
-    //   V: parsedRow.V,
-    // });
-    return parsedRow;
-  });
-  return parsedData;
+  return await response.json();
 };

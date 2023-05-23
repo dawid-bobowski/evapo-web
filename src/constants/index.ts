@@ -11,3 +11,7 @@ export const DB_NAMES: string[] = [
   'byd_2012_wdk',
   'byd_2011_wdk',
 ];
+
+export const MONTHS: string[] = ['kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik'];
+
+export const CHART_COLORS: string[] = ['#2fc4ff', '#2fffd2', '#ffce2f'];
