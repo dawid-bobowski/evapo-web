@@ -10,7 +10,7 @@ import {
   ComposedChart,
 } from 'recharts';
 import { useEffect, useState } from 'react';
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { FormControl, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import _ from 'lodash';
@@ -20,7 +20,7 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { getAxisYDomain } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import { getDbTable } from '../api';
-import { DB_NAMES } from '../constants';
+import { CHART_COLORS, DB_NAMES, MONTHS } from '../constants';
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
@@ -30,6 +30,9 @@ const MainChart = () => {
   const [selectedCharts, setSelectedCharts] = useState<ITableRow[][]>(
     useAppSelector((state) => state.tables.selectedTables)
   );
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [isManualRefArea, setIsManualRefArea] = useState<boolean>(false);
+
   const [tempChartData, setTempChartData] = useState<ITempChartDataRow[]>([]);
   const [tempChartRef, setTempChartRef] = useState<ITempChartDataRow[]>([]);
 
@@ -96,8 +99,7 @@ const MainChart = () => {
     setRefAreaRight('');
     setLeft(tempChartData[0].Data);
     setRight(tempChartData[tempChartData.length - 1].Data);
-    setTop(newTop);
-    setBottom(newBottom);
+    setSelectedMonth('');
   };
 
   useEffect(() => {
@@ -131,8 +133,20 @@ const MainChart = () => {
   }, []);
 
   useEffect(() => {
-    // console.log(tempChartData);
-  }, [tempChartData]);
+    if (selectedMonth === '') return;
+    const month: number = MONTHS.findIndex((month) => month === selectedMonth) + 4;
+    const daysInMonth: number = new Date(2020, month, 0).getDate();
+    setRefAreaLeft(`${month !== 10 ? `0${month}` : month}-01`);
+    setRefAreaRight(`${month !== 10 ? `0${month}` : month}-${daysInMonth}`);
+    setIsManualRefArea(true);
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    if (isManualRefArea) {
+      setIsManualRefArea(false);
+      zoom();
+    }
+  }, [isManualRefArea]);
 
   return (
     <Box id='main-window'>
@@ -151,6 +165,7 @@ const MainChart = () => {
           position: 'fixed',
         }}
       >
+        <FormLabel>Wybierz max 3 lata:</FormLabel>
         <FormControl
           size='small'
           sx={{
@@ -158,7 +173,6 @@ const MainChart = () => {
             width: 160,
           }}
         >
-          <InputLabel id='table-select-label'>Wybierz lata</InputLabel>
           <Select
             multiple
             value={selectedChartNames}
@@ -175,10 +189,14 @@ const MainChart = () => {
                 );
                 setSelectedCharts([]);
               }
-              setSelectedChartNames(event.target.value);
-              setSelectedTableNames({ newNames: event.target.value });
               let addedChart: string[] = _.difference(event.target.value, selectedChartNames);
               let deletedChart: string[] = _.difference(selectedChartNames, event.target.value);
+
+              if (selectedChartNames.length === 3 && _.isEmpty(deletedChart)) return;
+
+              setSelectedChartNames(event.target.value);
+              setSelectedTableNames({ newNames: event.target.value });
+
               if (!_.isEmpty(addedChart)) {
                 getDbTable(addedChart[0])
                   .then((newData: ITableRow[]) => {
@@ -199,6 +217,7 @@ const MainChart = () => {
                     );
                     setTop(newTop);
                     setBottom(newBottom);
+                    setSelectedMonth('');
                   })
                   .catch((error) => console.error(error));
               }
@@ -253,6 +272,30 @@ const MainChart = () => {
             ))}
           </Select>
         </FormControl>
+        <FormLabel>Wybierz miesiąc:</FormLabel>
+        <FormControl
+          size='small'
+          sx={{
+            marginBottom: '2rem',
+            width: 160,
+          }}
+        >
+          <Select
+            value={selectedMonth}
+            onChange={(event: SelectChangeEvent<string>) => {
+              setSelectedMonth(event.target.value);
+            }}
+          >
+            {MONTHS.map((month) => (
+              <MenuItem
+                key={month}
+                value={month}
+              >
+                {month}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Button
           onClick={resetZoom}
           sx={{
@@ -275,15 +318,26 @@ const MainChart = () => {
       <Box
         id='charts'
         sx={{
-          width: 'calc(100% - 200px - 4rem)',
-          minHeight: '100vh',
+          width: 'calc(100% - 200px - 10rem)',
+          minHeight: 'calc(100vh - 6rem)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
           gap: '3rem',
           marginLeft: 'calc(200px + 4rem)',
+          paddingTop: '6rem',
         }}
       >
+        {/* <Typography
+          variant='h3'
+          sx={{
+            color: '#fff',
+            fontFamily: 'Inter',
+            textAlign: 'left',
+            padding: '0 3rem',
+          }}
+        >
+          Temperatura
+        </Typography> */}
         <ResponsiveContainer
           width='100%'
           height={300}
@@ -304,29 +358,14 @@ const MainChart = () => {
               }
             }}
             onMouseUp={zoom}
+            style={{
+              backgroundColor: '#fff',
+              margin: '0 3rem',
+              padding: '2rem 0',
+            }}
           >
-            <defs>
-              <linearGradient
-                id='colorEt0'
-                x1='0'
-                y1='0'
-                x2='0'
-                y2='1'
-              >
-                <stop
-                  offset='5%'
-                  stopColor='#3467c4'
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset='95%'
-                  stopColor='#3467c4'
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
             <CartesianGrid
-              stroke='#fff'
+              stroke='#00000050'
               strokeDasharray='3 3'
               horizontalPoints={[5, 80, 160]}
             />
@@ -334,31 +373,29 @@ const MainChart = () => {
               dataKey='Data'
               padding='gap'
               domain={[left, right]}
-              label={{ value: 'Dzień', position: 'insideBottomRight', offset: -20, stroke: '#fff', dx: -60 }}
               tickCount={10}
-              tick={{ fill: '#fff' }}
-              tickLine={{ stroke: '#fff' }}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
             />
             <YAxis
               dataKey='T2021'
               yAxisId='T'
               padding={{ bottom: 10, top: 10 }}
               domain={[bottom as number, top as number]}
-              label={{ value: 'Temperatura', angle: -90, position: 'left', stroke: '#fff', dy: -45 }}
-              tick={{ fill: '#fff' }}
-              tickLine={{ stroke: '#fff' }}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
             />
             {!_.isEmpty(tempChartData) &&
               Object.keys(tempChartData[0])
                 .filter((key) => key !== 'Data')
-                .map((key) => {
+                .map((key, idx) => {
                   return (
                     <Line
                       key={key}
                       type='monotone'
                       dataKey={key}
                       yAxisId='T'
-                      stroke='#2fc4ff'
+                      stroke={CHART_COLORS[idx]}
                       strokeWidth={2}
                       animationDuration={300}
                       dot={false}
