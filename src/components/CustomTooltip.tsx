@@ -1,7 +1,12 @@
-import { NameType, Payload, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { TooltipProps } from 'recharts';
 import { Box } from '@mui/material';
 import _ from 'lodash';
+
+const unit: { [key: string]: string } = {
+  T: '°C',
+  ET0: 'mm',
+};
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
@@ -11,12 +16,15 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
           <span style={{ fontWeight: 'bold' }}>Dzień: </span>
           {label}
         </p>
-        {payload.map((data) => (
-          <p key={data.dataKey}>
-            <span style={{ fontWeight: 'bold' }}>{(data.dataKey as string).slice(1)}: </span>
-            {data.payload[data.dataKey as string]} °C
-          </p>
-        ))}
+        {payload.map((data) => {
+          const activeUnit: string = (data.dataKey as string).slice(0, -4);
+          return (
+            <p key={data.dataKey}>
+              <span style={{ fontWeight: 'bold' }}>{activeUnit}: </span>
+              {data.payload[data.dataKey as string]} {unit[activeUnit]}
+            </p>
+          );
+        })}
       </Box>
     );
   }

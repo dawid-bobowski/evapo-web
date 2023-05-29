@@ -64,24 +64,25 @@ export const convertDate = (date: string): string => {
  * @returns array consisting of bottom and top Y axis domain values.
  */
 export const getAxisYDomain = (
-  data: ITableRow[] | ITempChartDataRow[],
+  data: ITableRow[] | IChartDataRow[],
   from: string,
   to: string,
+  unit: string,
   offset: number
 ): number[] => {
   const startIndex: number = data.findIndex((item) => item.Data === from);
   const endIndex: number = data.findIndex((item) => item.Data === to);
-  const refData: ITableRow[] | ITempChartDataRow[] = data.slice(startIndex, endIndex + 1);
-  const keys: string[] = Object.keys(refData[0]).filter((key) => key !== 'Data');
+  const refData: ITableRow[] | IChartDataRow[] = data.slice(startIndex, endIndex + 1);
+  const keys: string[] = Object.keys(refData[0]).filter((key) => key !== 'Data' && _.startsWith(key, unit));
 
   let [bottom, top]: [bottom: number | string, top: number | string] = [
-    refData[0][keys[0] as keyof ITempChartDataRow] || 0,
-    refData[0][keys[0] as keyof ITempChartDataRow] || 0,
+    refData[0][keys[0] as keyof IChartDataRow] || 0,
+    refData[0][keys[0] as keyof IChartDataRow] || 0,
   ];
 
   _.forEach(refData, (rowData) => {
     _.forEach(keys, (key) => {
-      const fieldValue: string | number | null = rowData[key as keyof ITempChartDataRow];
+      const fieldValue: string | number | null = rowData[key as keyof IChartDataRow];
       if (fieldValue && fieldValue > top) top = fieldValue;
       if (fieldValue && fieldValue < bottom) bottom = fieldValue;
     });
@@ -103,3 +104,83 @@ export const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): IDat
   if (to > data2[data2.length - 1].Data) to = data2[data2.length - 1].Data;
   return { from, to };
 };
+
+interface IZoomProps {
+  unit: string;
+  refAreaLeft: string;
+  refAreaRight: string;
+  refChartData: IChartDataRow[];
+  setLeft: React.Dispatch<React.SetStateAction<string>>;
+  setRight: React.Dispatch<React.SetStateAction<string>>;
+  setTop: React.Dispatch<React.SetStateAction<number | null>>;
+  setBottom: React.Dispatch<React.SetStateAction<number | null>>;
+  setRefAreaLeft: React.Dispatch<React.SetStateAction<string>>;
+  setRefAreaRight: React.Dispatch<React.SetStateAction<string>>;
+  setRefChartRef: React.Dispatch<React.SetStateAction<IChartDataRow[]>>;
+}
+
+/**
+ * Zooms in the tables.
+ */
+export const zoom = (props: IZoomProps) => {
+  const {
+    unit,
+    refAreaLeft,
+    refAreaRight,
+    refChartData,
+    setLeft,
+    setRight,
+    setTop,
+    setBottom,
+    setRefAreaLeft,
+    setRefAreaRight,
+    setRefChartRef,
+  } = props;
+
+  if (refAreaLeft === refAreaRight || refAreaLeft === '' || refAreaRight === '') {
+    setRefAreaLeft('');
+    setRefAreaRight('');
+    return;
+  }
+
+  // xAxis domain
+  let refLeft = refAreaLeft;
+  let refRight = refAreaRight;
+  let refAreaLeftIndex = _.indexOf(
+    refChartData,
+    refChartData.find((el) => el.Data === refAreaLeft)
+  );
+  let refAreaRightIndex = _.indexOf(
+    refChartData,
+    refChartData.find((el) => el.Data === refAreaRight)
+  );
+
+  if (refAreaLeftIndex > refAreaRightIndex) {
+    refRight = [refLeft, (refLeft = refRight)][0];
+    refAreaRightIndex = [refAreaLeftIndex, (refAreaLeftIndex = refAreaRightIndex)][0];
+  }
+  if (refLeft === '' || refRight === '') return;
+  // yAxis domain
+  const [newBottom, newTop] = getAxisYDomain(refChartData, refLeft, refRight, unit, 1);
+
+  setRefChartRef(refChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1));
+  setRefAreaLeft('');
+  setRefAreaRight('');
+  setLeft(refLeft);
+  setRight(refRight);
+  setTop(newTop);
+  setBottom(newBottom);
+};
+
+interface IResetZoomProps {
+  refChartData: IChartDataRow[];
+  unit: string;
+  setLeft: React.Dispatch<React.SetStateAction<string>>;
+  setRight: React.Dispatch<React.SetStateAction<string>>;
+  setTop: React.Dispatch<React.SetStateAction<number | null>>;
+  setBottom: React.Dispatch<React.SetStateAction<number | null>>;
+  setRefAreaLeft: React.Dispatch<React.SetStateAction<string>>;
+  setRefAreaRight: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedMonth: React.Dispatch<React.SetStateAction<string>>;
+  setTempChartRef: React.Dispatch<React.SetStateAction<IChartDataRow[]>>;
+}

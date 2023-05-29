@@ -17,7 +17,7 @@ interface ITableRow {
   ET0: number;
 }
 
-interface ITempChartDataRow {
+interface IChartDataRow {
   Data: string;
   [key: typeof string]: number;
 }
