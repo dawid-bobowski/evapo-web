@@ -42,6 +42,27 @@ interface IDataRow {
 interface TableState {
   selectedTableNames: string[];
   selectedTables: ITableRow[][];
+  selectedMonth: string;
+}
+
+interface ChartsState {
+  mainChartData: IChartDataRow[];
+  tempChartRef: IChartDataRow[];
+  evapoChartRef: IChartDataRow[];
+  isManualRefArea: boolean;
+  isManualRefArea_ET0: boolean;
+  refAreaLeft: string;
+  refAreaLeft_ET0: string;
+  refAreaRight: string;
+  refAreaRight_ET0: string;
+  left: string;
+  left_ET0: string;
+  right: string;
+  right_ET0: string;
+  top: number | null;
+  top_ET0: number | null;
+  bottom: number | null;
+  bottom_ET0: number | null;
 }
 
 interface IHandleChangeSelectChangeProps {

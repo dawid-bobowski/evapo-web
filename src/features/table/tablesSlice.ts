@@ -5,6 +5,7 @@ import { DB_NAMES } from '../../constants';
 const initialState: TableState = {
   selectedTableNames: [DB_NAMES[0]],
   selectedTables: [],
+  selectedMonth: '',
 };
 
 const tablesSlice = createSlice({
@@ -17,8 +18,11 @@ const tablesSlice = createSlice({
     setSelectedTableNames(state, action: PayloadAction<{ newNames: string[] }>) {
       state.selectedTableNames = action.payload.newNames;
     },
+    setSelectedMonth(state, action: PayloadAction<{ newMonth: string }>) {
+      state.selectedMonth = action.payload.newMonth;
+    },
   },
 });
 
-export const { setSelectedTables, setSelectedTableNames } = tablesSlice.actions;
+export const { setSelectedTables, setSelectedTableNames, setSelectedMonth } = tablesSlice.actions;
 export default tablesSlice.reducer;
