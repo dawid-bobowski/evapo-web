@@ -1,3 +1,4 @@
+import { ActionCreatorWithPayload } from '@reduxjs/toolkit';
 import _ from 'lodash';
 
 interface ICalculateEvapoProps {
@@ -107,39 +108,21 @@ export const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): IDat
 
 interface IZoomProps {
   unit: string;
-  refAreaLeft: string;
-  refAreaRight: string;
-  refChartData: IChartDataRow[];
-  setLeft: React.Dispatch<React.SetStateAction<string>>;
-  setRight: React.Dispatch<React.SetStateAction<string>>;
-  setTop: React.Dispatch<React.SetStateAction<number | null>>;
-  setBottom: React.Dispatch<React.SetStateAction<number | null>>;
-  setRefAreaLeft: React.Dispatch<React.SetStateAction<string>>;
-  setRefAreaRight: React.Dispatch<React.SetStateAction<string>>;
-  setRefChartRef: React.Dispatch<React.SetStateAction<IChartDataRow[]>>;
+  chartsState: ChartsState;
+  setChartsProps: ActionCreatorWithPayload<{ newProps: ChartsState }, 'charts/setChartsProps'>;
 }
 
 /**
  * Zooms in the tables.
  */
 export const zoom = (props: IZoomProps) => {
-  const {
-    unit,
-    refAreaLeft,
-    refAreaRight,
-    refChartData,
-    setLeft,
-    setRight,
-    setTop,
-    setBottom,
-    setRefAreaLeft,
-    setRefAreaRight,
-    setRefChartRef,
-  } = props;
+  const { unit, chartsState, setChartsProps } = props;
 
+  const { refAreaLeft, refAreaRight } = chartsState;
   if (refAreaLeft === refAreaRight || refAreaLeft === '' || refAreaRight === '') {
     setRefAreaLeft('');
     setRefAreaRight('');
+    setChartsProps;
     return;
   }
 

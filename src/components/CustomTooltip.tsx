@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
           const activeUnit: string = (data.dataKey as string).slice(0, -4);
           return (
             <p key={data.dataKey}>
-              <span style={{ fontWeight: 'bold' }}>{activeUnit}: </span>
+              <span style={{ fontWeight: 'bold' }}>{data.dataKey as string}: </span>
               {data.payload[data.dataKey as string]} {unit[activeUnit]}
             </p>
           );

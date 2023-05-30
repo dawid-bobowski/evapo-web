@@ -7,7 +7,6 @@ import {
   ReferenceArea,
   ResponsiveContainer,
   ComposedChart,
-  Legend,
 } from 'recharts';
 import { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
@@ -15,7 +14,7 @@ import Box from '@mui/material/Box';
 import _ from 'lodash';
 
 import { setSelectedMonth, setSelectedTables } from '../features/table/tablesSlice';
-import { setChartsProps, setMainChartData } from '../features/chart/chartsSlice';
+import { setChartsProps } from '../features/chart/chartsSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { getAxisYDomain, zoom } from '../utils';
 import CustomTooltip from './CustomTooltip';
@@ -29,8 +28,7 @@ const MainChart = () => {
   const selectedTableNames: string[] = useAppSelector((state) => state.tables.selectedTableNames);
   const selectedTables: ITableRow[][] = useAppSelector((state) => state.tables.selectedTables);
   const selectedMonth: string = useAppSelector((state) => state.tables.selectedMonth);
-  const chartsState = useAppSelector((state) => state.charts);
-
+  const chartsState: ChartsState = useAppSelector((state) => state.charts);
   const prevSelectedTableNames = usePrevious(selectedTableNames);
 
   useEffect(() => {
@@ -44,7 +42,6 @@ const MainChart = () => {
             [`${MAIN_UNIT}${year}`]: data.T,
             [`${EVAPO_UNIT}${year}`]: data.ET0,
           }));
-          console.log(newChartData);
           const [newBottom, newTop] = getAxisYDomain(
             newChartData,
             newChartData[0].Data,
@@ -59,23 +56,18 @@ const MainChart = () => {
             EVAPO_UNIT,
             1
           );
-          // dispatch(
-          //   setChartsProps({
-          //     newProps: {
-          //       ...chartsState,
-          //       mainChartData: newChartData,
-          //       tempChartRef: newChartData,
-          //       evapoChartRef: newChartData,
-          //       top: newTop,
-          //       bottom: newBottom,
-          //       top_ET0: newTop_ET0,
-          //       bottom_ET0: newBottom_ET0,
-          //     },
-          //   })
-          // );
           dispatch(
-            setMainChartData({
-              newData: newChartData,
+            setChartsProps({
+              newProps: {
+                ...chartsState,
+                mainChartData: newChartData,
+                tempChartRef: newChartData,
+                evapoChartRef: newChartData,
+                top: newTop,
+                bottom: newBottom,
+                top_ET0: newTop_ET0,
+                bottom_ET0: newBottom_ET0,
+              },
             })
           );
         })
@@ -107,19 +99,7 @@ const MainChart = () => {
   useEffect(() => {
     if (chartsState.isManualRefArea) {
       dispatch(setChartsProps({ newProps: { ...chartsState, isManualRefArea: false } }));
-      // zoom({
-      //   unit: MAIN_UNIT,
-      //   refAreaLeft: refAreaLeft,
-      //   refAreaRight: refAreaRight,
-      //   refChartData: mainChartData,
-      //   setLeft: setLeft,
-      //   setRight: setRight,
-      //   setTop: setTop,
-      //   setBottom: setBottom,
-      //   setRefAreaLeft: setRefAreaLeft,
-      //   setRefAreaRight: setRefAreaRight,
-      //   setRefChartRef: setTempChartRef,
-      // });
+      zoom({ unit: MAIN_UNIT, chartsState, setChartsProps });
     }
   }, [chartsState.isManualRefArea]);
 
@@ -143,7 +123,6 @@ const MainChart = () => {
   }, [chartsState.isManualRefArea_ET0]);
 
   useEffect(() => {
-    console.log(selectedTableNames);
     if (_.isEmpty(selectedTableNames)) {
       dispatch(
         setChartsProps({
@@ -180,101 +159,71 @@ const MainChart = () => {
             EVAPO_UNIT,
             1
           );
-          // dispatch(
-          //   setChartsProps({
-          //     newProps: {
-          //       ...chartsState,
-          //       mainChartData: newChartData,
-          //       tempChartRef: newChartData,
-          //       top: newTop,
-          //       bottom: newBottom,
-          //       evapoChartRef: newChartData,
-          //       top_ET0: newTop_ET0,
-          //       bottom_ET0: newBottom_ET0,
-          //     },
-          //   })
-          // );
           dispatch(
-            setMainChartData({
-              newData: newChartData,
+            setChartsProps({
+              newProps: {
+                ...chartsState,
+                mainChartData: newChartData,
+                tempChartRef: newChartData,
+                top: newTop,
+                bottom: newBottom,
+                evapoChartRef: newChartData,
+                top_ET0: newTop_ET0,
+                bottom_ET0: newBottom_ET0,
+              },
             })
           );
           dispatch(setSelectedMonth({ newMonth: '' }));
         })
         .catch((error) => console.error(error));
     }
-    // if (!_.isEmpty(deletedChart)) {
-    //   const updatedTables: ITableRow[][] = selectedTables.filter(
-    //     (table) => deletedChart[0].replace(/\D/g, '') !== table[0].Data.slice(0, 4)
-    //   );
-    //   dispatch(setSelectedTables({ newTables: updatedTables }));
-    //   _.forEach(updatedTables, (updatedTable) => {
-    //     const [newBottom, newTop] = getAxisYDomain(
-    //       updatedTable,
-    //       updatedTable[0].Data,
-    //       updatedTable[updatedTable.length - 1].Data,
-    //       MAIN_UNIT,
-    //       1
-    //     );
-    //     const [newBottom_ET0, newTop_ET0] = getAxisYDomain(
-    //       updatedTable,
-    //       updatedTable[0].Data,
-    //       updatedTable[updatedTable.length - 1].Data,
-    //       EVAPO_UNIT,
-    //       1
-    //     );
-    //     dispatch(
-    //       setChartsProps({
-    //         newProps: {
-    //           ...chartsState,
-    //           top: newTop,
-    //           bottom: newBottom,
-    //           top_ET0: newTop_ET0,
-    //           bottom_ET0: newBottom_ET0,
-    //         },
-    //       })
-    //     );
-    //   });
-    //   const year: string = deletedChart[0].replace(/\D/g, '');
-    //   let newChartData: IChartDataRow[] = chartsState.mainChartData.map((dataRow) => {
-    //     const keys: string[] = Object.keys(dataRow)
-    //       .filter((key) => key.slice(1) !== year)
-    //       .filter((key) => key.slice(1) !== 'Data');
-    //     let newRowData: IChartDataRow = {
-    //       Data: dataRow.Data,
-    //     };
-    //     _.forEach(keys, (key) => {
-    //       newRowData[key as keyof IChartDataRow] = dataRow[key as keyof IChartDataRow];
-    //     });
-    //     return newRowData;
-    //   });
-    //   const [newBottom, newTop] = getAxisYDomain(
-    //     newChartData,
-    //     newChartData[0].Data,
-    //     newChartData[newChartData.length - 1].Data,
-    //     MAIN_UNIT,
-    //     1
-    //   );
-    //   const [newBottom_ET0, newTop_ET0] = getAxisYDomain(
-    //     newChartData,
-    //     newChartData[0].Data,
-    //     newChartData[newChartData.length - 1].Data,
-    //     EVAPO_UNIT,
-    //     1
-    //   );
-    //   dispatch(
-    //     setChartsProps({
-    //       newProps: {
-    //         ...chartsState,
-    //         mainChartData: newChartData,
-    //         top: newTop,
-    //         bottom: newBottom,
-    //         top_ET0: newTop_ET0,
-    //         bottom_ET0: newBottom_ET0,
-    //       },
-    //     })
-    //   );
-    // }
+    if (!_.isEmpty(deletedChart)) {
+      const updatedTables: ITableRow[][] = selectedTables.filter(
+        (table) => deletedChart[0].slice(4, 8) !== table[0].Data.slice(0, 4)
+      );
+      dispatch(setSelectedTables({ newTables: updatedTables }));
+      const year: string = deletedChart[0].replace(/\D/g, '');
+      let newChartData: IChartDataRow[] = chartsState.mainChartData.map((dataRow) => {
+        const keys: string[] = Object.keys(dataRow)
+          .filter((key) => key.slice(-4) !== year)
+          .filter((key) => key !== 'Data');
+        let newRowData: IChartDataRow = {
+          Data: dataRow.Data,
+        };
+        _.forEach(keys, (key) => {
+          newRowData[key as keyof IChartDataRow] = dataRow[key as keyof IChartDataRow];
+        });
+        return newRowData;
+      });
+      const [newBottom, newTop] = getAxisYDomain(
+        newChartData,
+        newChartData[0].Data,
+        newChartData[newChartData.length - 1].Data,
+        MAIN_UNIT,
+        1
+      );
+      const [newBottom_ET0, newTop_ET0] = getAxisYDomain(
+        newChartData,
+        newChartData[0].Data,
+        newChartData[newChartData.length - 1].Data,
+        EVAPO_UNIT,
+        1
+      );
+      dispatch(
+        setChartsProps({
+          newProps: {
+            ...chartsState,
+            mainChartData: newChartData,
+            tempChartRef: newChartData,
+            evapoChartRef: newChartData,
+            top: newTop,
+            bottom: newBottom,
+            top_ET0: newTop_ET0,
+            bottom_ET0: newBottom_ET0,
+          },
+        })
+      );
+    }
   }, [selectedTableNames]);
 
   useEffect(() => {
@@ -362,7 +311,7 @@ const MainChart = () => {
             />
             {!_.isEmpty(chartsState.mainChartData) &&
               Object.keys(chartsState.mainChartData[0])
-                .filter((key) => key !== 'Data')
+                .filter((key) => key !== 'Data' && _.startsWith(key, MAIN_UNIT))
                 .map((key, idx) => {
                   return (
                     <Line
@@ -386,7 +335,6 @@ const MainChart = () => {
                 opacity: 0.8,
               }}
             />
-            <Legend />
             {chartsState.refAreaLeft && chartsState.refAreaRight ? (
               <ReferenceArea
                 yAxisId={MAIN_UNIT}
@@ -495,7 +443,6 @@ const MainChart = () => {
                 opacity: 0.8,
               }}
             />
-            <Legend margin={{ bottom: 20 }} />
             {chartsState.refAreaLeft_ET0 && chartsState.refAreaRight_ET0 ? (
               <ReferenceArea
                 yAxisId={EVAPO_UNIT}
