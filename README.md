@@ -1,4 +1,3 @@
-# To be fixed
+# to be fixed:
 
-- top and bottom doesn't update when no table is selected
-- different colors of lines
+zoom() and resetZoom() need a refactor
