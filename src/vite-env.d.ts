@@ -49,8 +49,7 @@ interface ChartsState {
   mainChartData: IChartDataRow[];
   tempChartRef: IChartDataRow[];
   evapoChartRef: IChartDataRow[];
-  isManualRefArea: boolean;
-  isManualRefArea_ET0: boolean;
+  wasMonthSelected: boolean;
   refAreaLeft: string;
   refAreaLeft_ET0: string;
   refAreaRight: string;

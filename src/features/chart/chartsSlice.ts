@@ -4,8 +4,7 @@ const initialState: ChartsState = {
   mainChartData: [],
   tempChartRef: [],
   evapoChartRef: [],
-  isManualRefArea: false,
-  isManualRefArea_ET0: false,
+  wasMonthSelected: false,
   refAreaLeft: '',
   refAreaLeft_ET0: '',
   refAreaRight: '',
@@ -29,8 +28,7 @@ const chartsSlice = createSlice({
         mainChartData,
         tempChartRef,
         evapoChartRef,
-        isManualRefArea,
-        isManualRefArea_ET0,
+        wasMonthSelected,
         refAreaLeft,
         refAreaLeft_ET0,
         refAreaRight,
@@ -48,8 +46,7 @@ const chartsSlice = createSlice({
       state.mainChartData = mainChartData;
       state.tempChartRef = tempChartRef;
       state.evapoChartRef = evapoChartRef;
-      state.isManualRefArea = isManualRefArea;
-      state.isManualRefArea_ET0 = isManualRefArea_ET0;
+      state.wasMonthSelected = wasMonthSelected;
       state.refAreaLeft = refAreaLeft;
       state.refAreaLeft_ET0 = refAreaLeft_ET0;
       state.refAreaRight = refAreaRight;
