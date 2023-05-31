@@ -1,12 +1,12 @@
 import _ from 'lodash';
 
-import MainChart from './components/MainChart';
+import MainCharts from './components/MainCharts';
 import './App.css';
 
 function App() {
   return (
     <div className='App'>
-      <MainChart />
+      <MainCharts />
     </div>
   );
 }

@@ -330,8 +330,8 @@ const MainChart = () => {
           src={logo}
         />
         <Typography
-          variant='h6'
-          sx={{ color: '#000' }}
+          variant='h2'
+          sx={{ color: '#000', fontSize: '1.2rem' }}
         >
           Aplikacja do wizualizacji danych meteorologicznych dla miasta Bydgoszczy
         </Typography>
@@ -339,7 +339,7 @@ const MainChart = () => {
       <Box
         id='charts'
         sx={{
-          width: 'calc(100% - 200px - 10rem)',
+          width: 'calc(100% - 200px)',
           maxWidth: 1400,
           minHeight: 'calc(100vh - 10rem)',
           display: 'flex',
@@ -354,7 +354,7 @@ const MainChart = () => {
           variant='h4'
           sx={{
             color: '#fff',
-            fontFamily: 'Inter',
+            fontSize: '1.2rem',
             textAlign: 'left',
             marginTop: '2rem',
             marginBottom: '-2rem',
@@ -362,11 +362,7 @@ const MainChart = () => {
         >
           Średnia temperatura [°C]
         </Typography>
-        <Box
-          sx={{
-            marginLeft: '-3rem',
-          }}
-        >
+        <Box>
           <ResponsiveContainer height={300}>
             <ComposedChart
               width={900}
@@ -386,7 +382,6 @@ const MainChart = () => {
               onMouseUp={() => zoom(true, false)}
               style={{
                 backgroundColor: '#fff',
-                margin: '0 3rem',
                 padding: '2rem 0',
               }}
             >
@@ -453,7 +448,7 @@ const MainChart = () => {
           variant='h4'
           sx={{
             color: '#fff',
-            fontFamily: 'Inter',
+            fontSize: '1.2rem',
             textAlign: 'left',
             marginTop: '3rem',
             marginBottom: '-2rem',
@@ -461,11 +456,7 @@ const MainChart = () => {
         >
           Ewapotranspiracja [mm]
         </Typography>
-        <Box
-          sx={{
-            marginLeft: '-3rem',
-          }}
-        >
+        <Box>
           <ResponsiveContainer height={300}>
             <ComposedChart
               width={900}
@@ -485,7 +476,6 @@ const MainChart = () => {
               onMouseUp={() => zoom(false, true)}
               style={{
                 backgroundColor: '#fff',
-                margin: '0 3rem',
                 padding: '2rem 0',
               }}
             >
