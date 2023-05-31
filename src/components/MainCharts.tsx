@@ -247,7 +247,6 @@ const MainChart = () => {
               },
             })
           );
-          dispatch(setSelectedMonth({ newMonth: '' }));
         })
         .catch((error) => console.error(error));
     }
