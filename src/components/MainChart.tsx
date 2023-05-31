@@ -36,9 +36,9 @@ const MainChart = () => {
   /**
    * Zooms in the tables.
    */
-  const zoom = (unit1: string, unit2?: string) => {
-    const { refAreaLeft, refAreaRight, refAreaLeft_ET0, refAreaRight_ET0, mainChartData } = chartsState;
-    if (refAreaLeft === refAreaRight || refAreaLeft === '' || refAreaRight === '') {
+  const zoom = (temp: boolean, evapo: boolean) => {
+    const { refAreaLeft, refAreaRight, refAreaLeft_ET0, refAreaRight_ET0, mainChartData, top, bottom } = chartsState;
+    if (temp && (refAreaLeft === refAreaRight || refAreaLeft === '' || refAreaRight === '')) {
       dispatch(
         setChartsProps({
           newProps: {
@@ -50,43 +50,47 @@ const MainChart = () => {
       );
       return;
     }
-    // xAxis domain
-    let refLeft = refAreaLeft;
-    let refRight = refAreaRight;
-    let refAreaLeftIndex = _.indexOf(
+    let refLeft: string = refAreaLeft;
+    let refRight: string = refAreaRight;
+    let refAreaLeftIndex: number = _.indexOf(
       mainChartData,
       mainChartData.find((el) => el.Data === refAreaLeft)
     );
-    let refAreaRightIndex = _.indexOf(
+    let refAreaRightIndex: number = _.indexOf(
       mainChartData,
       mainChartData.find((el) => el.Data === refAreaRight)
     );
-    if (refAreaLeftIndex > refAreaRightIndex) {
-      refRight = [refLeft, (refLeft = refRight)][0];
-      refAreaRightIndex = [refAreaLeftIndex, (refAreaLeftIndex = refAreaRightIndex)][0];
-    }
-    if (refLeft === '' || refRight === '') return;
-    // yAxis domain
-    const [newBottom, newTop] = getAxisYDomain(mainChartData, refLeft, refRight, unit1, 1);
-    if (!unit2) {
-      dispatch(
-        setChartsProps({
-          newProps: {
-            ...chartsState,
-            tempChartRef: mainChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1),
-            refAreaLeft: '',
-            refAreaRight: '',
-            left: refLeft,
-            right: refRight,
-            top: newTop,
-            bottom: newBottom,
-          },
-        })
-      );
+    let newTop: number | null = top;
+    let newBottom: number | null = bottom;
+    if (temp) {
+      // xAxis domain
+      if (refAreaLeftIndex > refAreaRightIndex) {
+        refRight = [refLeft, (refLeft = refRight)][0];
+        refAreaRightIndex = [refAreaLeftIndex, (refAreaLeftIndex = refAreaRightIndex)][0];
+      }
+      if (refLeft === '' || refRight === '') return;
+      // yAxis domain
+      [newBottom, newTop] = getAxisYDomain(mainChartData, refLeft, refRight, TEMP_UNIT, 1);
+      if (!evapo) {
+        dispatch(
+          setChartsProps({
+            newProps: {
+              ...chartsState,
+              tempChartRef: mainChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1),
+              refAreaLeft: '',
+              refAreaRight: '',
+              left: refLeft,
+              right: refRight,
+              top: newTop,
+              bottom: newBottom,
+            },
+          })
+        );
+      }
     }
 
-    if (unit2) {
-      if (refAreaLeft_ET0 === refAreaRight_ET0 || refAreaLeft_ET0 === '' || refAreaRight_ET0 === '') {
+    if (evapo) {
+      if (!temp && (refAreaLeft_ET0 === refAreaRight_ET0 || refAreaLeft_ET0 === '' || refAreaRight_ET0 === '')) {
         dispatch(
           setChartsProps({
             newProps: {
@@ -115,18 +119,20 @@ const MainChart = () => {
       }
       if (refLeft_ET0 === '' || refRight_ET0 === '') return;
       // yAxis domain
-      const [newBottom_ET0, newTop_ET0] = getAxisYDomain(mainChartData, refLeft_ET0, refRight_ET0, unit2, 1);
+      const [newBottom_ET0, newTop_ET0] = getAxisYDomain(mainChartData, refLeft_ET0, refRight_ET0, EVAPO_UNIT, 1);
       dispatch(
         setChartsProps({
           newProps: {
             ...chartsState,
-            tempChartRef: mainChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1),
-            refAreaLeft: '',
-            refAreaRight: '',
-            left: refLeft,
-            right: refRight,
-            top: newTop,
-            bottom: newBottom,
+            tempChartRef: temp
+              ? mainChartData.slice(refAreaLeftIndex, refAreaRightIndex + 1)
+              : chartsState.tempChartRef,
+            refAreaLeft: temp ? '' : chartsState.refAreaLeft,
+            refAreaRight: temp ? '' : chartsState.refAreaRight,
+            left: temp ? refLeft : chartsState.left,
+            right: temp ? refRight : chartsState.right,
+            top: temp ? newTop : chartsState.top,
+            bottom: temp ? newBottom : chartsState.bottom,
             evapoChartRef: mainChartData.slice(refAreaLeftIndex_ET0, refAreaRightIndex_ET0 + 1),
             refAreaLeft_ET0: '',
             refAreaRight_ET0: '',
@@ -187,7 +193,7 @@ const MainChart = () => {
 
   useEffect(() => {
     if (!chartsState.wasMonthSelected) return;
-    zoom(TEMP_UNIT, EVAPO_UNIT);
+    zoom(true, true);
   }, [chartsState.wasMonthSelected]);
 
   useEffect(() => {
@@ -335,13 +341,13 @@ const MainChart = () => {
         sx={{
           width: 'calc(100% - 200px - 10rem)',
           maxWidth: 1400,
-          minHeight: 'calc(100vh - 10%)',
+          minHeight: 'calc(100vh - 10rem)',
           display: 'flex',
           flexDirection: 'column',
           gap: '3rem',
           margin: '0 auto',
-          paddingTop: '5%',
-          paddingBottom: '5%',
+          paddingTop: '4rem',
+          paddingBottom: '6rem',
         }}
       >
         <Typography
@@ -377,7 +383,7 @@ const MainChart = () => {
                   dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight: event.activeLabel } }));
                 }
               }}
-              onMouseUp={() => zoom(TEMP_UNIT)}
+              onMouseUp={() => zoom(true, false)}
               style={{
                 backgroundColor: '#fff',
                 margin: '0 3rem',
@@ -476,7 +482,7 @@ const MainChart = () => {
                   dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_ET0: event.activeLabel } }));
                 }
               }}
-              onMouseUp={() => zoom(EVAPO_UNIT)}
+              onMouseUp={() => zoom(false, true)}
               style={{
                 backgroundColor: '#fff',
                 margin: '0 3rem',

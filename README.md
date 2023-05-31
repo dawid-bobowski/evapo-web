@@ -1,3 +1,3 @@
-# to be fixed:
+### **Known bugs:**
 
-zoom() and resetZoom() need a refactor
+- none
