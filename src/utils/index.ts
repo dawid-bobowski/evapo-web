@@ -1,4 +1,4 @@
-import { ActionCreatorWithPayload } from '@reduxjs/toolkit';
+import { saveAs } from 'file-saver';
 import _ from 'lodash';
 
 interface ICalculateEvapoProps {
@@ -105,3 +105,42 @@ export const calculateDateRange = (data1: ITableRow[], data2: ITableRow[]): IDat
   if (to > data2[data2.length - 1].Data) to = data2[data2.length - 1].Data;
   return { from, to };
 };
+
+const getCSVRowHeaders = (content: IChartDataRow[]): string => {
+  const keys: string[] = Object.keys(content[0]).filter(key => key !== "Data");
+  let headers: string = "\"Data\"";
+  _.forEach(keys, key => {
+    headers += `,"${key}"`;
+  });
+  headers += "\n";
+  return headers;
+}
+
+const getCSVRows = (content: IChartDataRow[], left: string, right: string): string => {
+  let text: string = "";
+  content.filter(row => row.Data >= left && row.Data <= right).map(row => {
+    text += `"${row.Data}"`
+    _.forEach(Object.keys(row).filter(key => key !== "Data"), key => {
+      text += `,"${row[key as keyof IChartDataRow]}"`
+    })
+    text += "\n";
+  });
+  return text;
+}
+
+const GetCSVFileName = (chartNames: string[]): string => {
+  let fileName: string = "byd";
+  _.forEach(chartNames, name => {
+    fileName += `_${name.slice(4, 8)}`
+  });
+  fileName += "_wdk";
+  return fileName;
+}
+
+export const createTextFile = (content: IChartDataRow[], selectedChartNames: string[], left: string, right: string) => {
+  let contentRows: string = getCSVRowHeaders(content) + getCSVRows(content, left, right);
+  const blob = new Blob([contentRows], {
+     type: "text/csv",
+  });
+  saveAs(blob, GetCSVFileName(selectedChartNames) + ".csv");
+}

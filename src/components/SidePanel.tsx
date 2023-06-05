@@ -3,7 +3,7 @@ import { Box, Button, FormControl, FormLabel, MenuItem, Select, SelectChangeEven
 
 import { setSelectedMonth, setSelectedTableNames } from '../features/table/tablesSlice';
 import { DB_NAMES, EVAPO_UNIT, TEMP_UNIT, MONTHS } from '../constants';
-import { getAxisYDomain } from '../utils';
+import { createTextFile, getAxisYDomain } from '../utils';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { setChartsProps } from '../features/chart/chartsSlice';
 import { useEffect } from 'react';
@@ -151,26 +151,65 @@ const SidePanel = () => {
             ))}
           </Select>
         </FormControl>
-        <Button
-          onClick={resetZoom}
-          sx={{
-            width: 80,
-            lineHeight: 1.5,
-            fontWeight: 'bold',
-            height: '2.5rem',
-            marginBottom: '2rem',
-            color: '#002d80',
-            backgroundColor: '#fff',
-            border: '1px solid rgba(0, 0, 0, 0.2)',
-            textTransform: 'capitalize',
-            '&:hover': {
-              border: '1px solid rgba(0, 0, 0, 0.87)',
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+          <Button
+            onClick={resetZoom}
+            sx={{
+              width: 80,
+              lineHeight: 1.5,
+              fontWeight: 'bold',
+              height: '2.5rem',
+              color: '#002d80',
               backgroundColor: '#fff',
-            },
-          }}
-        >
-          Reset
-        </Button>
+              border: '1px solid rgba(0, 0, 0, 0.2)',
+              textTransform: 'capitalize',
+              '&:hover': {
+                border: '1px solid rgba(0, 0, 0, 0.87)',
+                backgroundColor: '#fff',
+              },
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            onClick={() => createTextFile(chartsState.tempChartRef, selectedChartNames, chartsState.left, chartsState.right)}
+            sx={{
+              width: 120,
+              lineHeight: 1.5,
+              fontWeight: 'bold',
+              height: '2.5rem',
+              color: '#002d80',
+              backgroundColor: '#fff',
+              border: '1px solid rgba(0, 0, 0, 0.2)',
+              textTransform: 'capitalize',
+              '&:hover': {
+                border: '1px solid rgba(0, 0, 0, 0.87)',
+                backgroundColor: '#fff',
+              },
+            }}
+            >
+            Pobierz T
+          </Button>
+          <Button
+            onClick={() => createTextFile(chartsState.evapoChartRef, selectedChartNames, chartsState.left_ET0, chartsState.right_ET0)}
+            sx={{
+              width: 120,
+              lineHeight: 1.5,
+              fontWeight: 'bold',
+              height: '2.5rem',
+              color: '#002d80',
+              backgroundColor: '#fff',
+              border: '1px solid rgba(0, 0, 0, 0.2)',
+              textTransform: 'capitalize',
+              '&:hover': {
+                border: '1px solid rgba(0, 0, 0, 0.87)',
+                backgroundColor: '#fff',
+              },
+            }}
+            >
+            Pobierz ET0
+          </Button>
+        </Box>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         <Typography

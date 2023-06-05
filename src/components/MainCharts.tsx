@@ -332,7 +332,7 @@ const MainChart = () => {
           variant='h2'
           sx={{ color: '#000', fontSize: '1.2rem' }}
         >
-          Aplikacja do wizualizacji danych meteorologicznych dla miasta Bydgoszczy
+          Aplikacja do wizualizacji danych meteorologicznych dla miasta Bydgoszcz
         </Typography>
       </Box>
       <Box

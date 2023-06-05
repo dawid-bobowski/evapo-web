@@ -4,3 +4,13 @@
   width: 100%;
   min-height: 100vh;
 }
+
+.App {
+  color: #fff;
+  background-color: #13254d;
+}
+
+text.recharts-cartesian-axis-tick-value,
+span.recharts-legend-item-text {
+  user-select: none;
+}
