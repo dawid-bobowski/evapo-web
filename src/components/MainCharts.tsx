@@ -15,13 +15,13 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import _ from 'lodash';
 
-import { setSelectedMonth, setSelectedTables } from '../features/table/tablesSlice';
+import { setSelectedTables } from '../features/table/tablesSlice';
 import { setChartsProps } from '../features/chart/chartsSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { getAxisYDomain } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import { getDbTable } from '../api';
-import { TEMP_CHART_COLORS, TEMP_UNIT, EVAPO_UNIT, MONTHS, EVAPO_CHART_COLORS } from '../constants';
+import { CHART_COLORS, TEMP_UNIT, EVAPO_UNIT } from '../constants';
 import SidePanel from './SidePanel';
 import usePrevious from '../hooks/usePrevious';
 import logo from '../assets/logo-ukw.jpg';
@@ -415,7 +415,7 @@ const MainChart = () => {
                         type='monotone'
                         dataKey={key}
                         yAxisId={TEMP_UNIT}
-                        stroke={TEMP_CHART_COLORS[idx]}
+                        stroke={CHART_COLORS[idx]}
                         strokeWidth={2}
                         animationDuration={300}
                         dot={false}
@@ -509,7 +509,7 @@ const MainChart = () => {
                         type='monotone'
                         dataKey={key}
                         yAxisId={EVAPO_UNIT}
-                        stroke={EVAPO_CHART_COLORS[idx]}
+                        stroke={CHART_COLORS[idx]}
                         strokeWidth={2}
                         animationDuration={300}
                         dot={false}

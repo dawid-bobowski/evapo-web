@@ -14,8 +14,7 @@ export const DB_NAMES: string[] = [
 
 export const MONTHS: string[] = ['kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik'];
 
-export const EVAPO_CHART_COLORS: string[] = ['#6fd6ff', '#6cffdf', '#75ff68'];
-export const TEMP_CHART_COLORS: string[] = ['#ff6a6a', '#ffb764', '#ffef5b'];
+export const CHART_COLORS: string[] = ['#1bbcb8', '#6fd6ff', '#6cffdf', '#75ff68', '#dcff68'];
 
 export const TEMP_UNIT: string = 'T';
 export const EVAPO_UNIT: string = 'ET0';

@@ -97,7 +97,7 @@ const SidePanel = () => {
       }}
     >
       <Box>
-        <FormLabel>Wybierz max 3 roczniki:</FormLabel>
+        <FormLabel>Wybierz max 5 roczników:</FormLabel>
         <FormControl
           size='small'
           sx={{
@@ -110,7 +110,7 @@ const SidePanel = () => {
             multiple
             value={selectedChartNames}
             onChange={(event: SelectChangeEvent<string[]>) => {
-              if (typeof event.target.value === 'string' || event.target.value.length > 3) {
+              if (typeof event.target.value === 'string' || event.target.value.length > 5) {
                 return;
               }
               dispatch(setSelectedTableNames({ newNames: event.target.value }));
