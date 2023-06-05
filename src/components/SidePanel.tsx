@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { Box, Button, FormControl, FormLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 
 import { setSelectedMonth, setSelectedTableNames } from '../features/table/tablesSlice';
-import { DB_NAMES, EVAPO_UNIT, TEMP_UNIT, MONTHS } from '../constants';
+import { DB_NAMES, EVAPO_UNIT, TEMP_UNIT, MONTHS, PREC_UNIT } from '../constants';
 import { createTextFile, getAxisYDomain } from '../utils';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { setChartsProps } from '../features/chart/chartsSlice';
@@ -32,6 +32,13 @@ const SidePanel = () => {
       EVAPO_UNIT,
       1
     );
+    const [newBottom_P, newTop_P] = getAxisYDomain(
+      chartsState.mainChartData,
+      chartsState.mainChartData[0].Data,
+      chartsState.mainChartData[chartsState.mainChartData.length - 1].Data,
+      PREC_UNIT,
+      1
+    );
 
     dispatch(
       setChartsProps({
@@ -51,6 +58,13 @@ const SidePanel = () => {
           right_ET0: chartsState.mainChartData[chartsState.mainChartData.length - 1].Data,
           refAreaLeft_ET0: '',
           refAreaRight_ET0: '',
+          precChartRef: chartsState.mainChartData,
+          top_P: newTop_P,
+          bottom_P: newBottom_P,
+          left_P: chartsState.mainChartData[0].Data,
+          right_P: chartsState.mainChartData[chartsState.mainChartData.length - 1].Data,
+          refAreaLeft_P: '',
+          refAreaRight_P: '',
         },
       })
     );
@@ -72,6 +86,8 @@ const SidePanel = () => {
           refAreaRight: newRefRight,
           refAreaLeft_ET0: newRefLeft,
           refAreaRight_ET0: newRefRight,
+          refAreaLeft_P: newRefLeft,
+          refAreaRight_P: newRefRight,
           wasMonthSelected: true,
         },
       })
@@ -114,6 +130,7 @@ const SidePanel = () => {
                 return;
               }
               dispatch(setSelectedTableNames({ newNames: event.target.value }));
+              dispatch(setSelectedMonth({ newMonth: '' }));
             }}
           >
             {DB_NAMES.map((name) => (
@@ -151,10 +168,20 @@ const SidePanel = () => {
             ))}
           </Select>
         </FormControl>
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.5rem',
+          }}
+        >
           <FormLabel>Wybierz przedział i pobierz dane w pliku CSV:</FormLabel>
           <Button
-            onClick={() => createTextFile(chartsState.mainChartData, selectedChartNames, chartsState.left, chartsState.right)}
+            onClick={() =>
+              createTextFile(chartsState.mainChartData, selectedChartNames, chartsState.left, chartsState.right)
+            }
             sx={{
               width: 120,
               lineHeight: 1.5,
@@ -169,10 +196,12 @@ const SidePanel = () => {
                 backgroundColor: '#fff',
               },
             }}
-            >
+          >
             Pobierz dane
           </Button>
-          <FormLabel sx={{ marginBottom: '2rem', fontSize: '0.75rem' }}>(miesiąc z listy lub ręcznie na wykresie z temperaturą)</FormLabel>
+          <FormLabel sx={{ marginBottom: '2rem', fontSize: '0.75rem' }}>
+            (miesiąc z listy lub ręcznie na wykresie z temperaturą)
+          </FormLabel>
           <FormLabel>Zresetuj przedział:</FormLabel>
           <Button
             onClick={resetZoom}

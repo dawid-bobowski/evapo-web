@@ -18,3 +18,4 @@ export const CHART_COLORS: string[] = ['#1bbcb8', '#6fd6ff', '#6cffdf', '#75ff68
 
 export const TEMP_UNIT: string = 'T';
 export const EVAPO_UNIT: string = 'ET0';
+export const PREC_UNIT: string = 'P';

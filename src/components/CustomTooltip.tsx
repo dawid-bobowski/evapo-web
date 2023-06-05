@@ -6,6 +6,7 @@ import _ from 'lodash';
 const unit: { [key: string]: string } = {
   T: '°C',
   ET0: 'mm',
+  P: 'mm',
 };
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {

@@ -6,8 +6,8 @@ import {
   Tooltip,
   ReferenceArea,
   ResponsiveContainer,
-  ComposedChart,
   Legend,
+  LineChart,
 } from 'recharts';
 import { useEffect } from 'react';
 import Typography from '@mui/material/Typography';
@@ -21,7 +21,7 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { getAxisYDomain } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import { getDbTable } from '../api';
-import { CHART_COLORS, TEMP_UNIT, EVAPO_UNIT } from '../constants';
+import { CHART_COLORS, TEMP_UNIT, EVAPO_UNIT, PREC_UNIT } from '../constants';
 import SidePanel from './SidePanel';
 import usePrevious from '../hooks/usePrevious';
 import logo from '../assets/logo-ukw.jpg';
@@ -36,8 +36,20 @@ const MainChart = () => {
   /**
    * Zooms in the tables.
    */
-  const zoom = (temp: boolean, evapo: boolean) => {
-    const { refAreaLeft, refAreaRight, refAreaLeft_ET0, refAreaRight_ET0, mainChartData, top, bottom } = chartsState;
+  const zoom = (temp: boolean, evapo: boolean, prec: boolean) => {
+    const {
+      refAreaLeft,
+      refAreaRight,
+      refAreaLeft_ET0,
+      refAreaRight_ET0,
+      refAreaLeft_P,
+      refAreaRight_P,
+      mainChartData,
+      top,
+      bottom,
+      top_P,
+      bottom_P,
+    } = chartsState;
     if (temp && (refAreaLeft === refAreaRight || refAreaLeft === '' || refAreaRight === '')) {
       dispatch(
         setChartsProps({
@@ -71,7 +83,7 @@ const MainChart = () => {
       if (refLeft === '' || refRight === '') return;
       // yAxis domain
       [newBottom, newTop] = getAxisYDomain(mainChartData, refLeft, refRight, TEMP_UNIT, 1);
-      if (!evapo) {
+      if (!evapo && !prec) {
         dispatch(
           setChartsProps({
             newProps: {
@@ -89,8 +101,64 @@ const MainChart = () => {
       }
     }
 
+    let refLeft_P: string = refAreaLeft_P;
+    let refRight_P: string = refAreaRight_P;
+    let refAreaLeftIndex_P: number = _.indexOf(
+      mainChartData,
+      mainChartData.find((el) => el.Data === refAreaLeft_P)
+    );
+    let refAreaRightIndex_P: number = _.indexOf(
+      mainChartData,
+      mainChartData.find((el) => el.Data === refAreaRight_P)
+    );
+    let newTop_P: number | null = top_P;
+    let newBottom_P: number | null = bottom_P;
+    if (prec) {
+      if (!temp && !evapo && (refAreaLeft_P === refAreaRight_P || refAreaLeft_P === '' || refAreaRight_P === '')) {
+        dispatch(
+          setChartsProps({
+            newProps: {
+              ...chartsState,
+              refAreaLeft_P: '',
+              refAreaRight_P: '',
+            },
+          })
+        );
+        return;
+      }
+      // xAxis domain
+      if (refAreaLeftIndex_P > refAreaRightIndex_P) {
+        refRight_P = [refLeft_P, (refLeft_P = refRight_P)][0];
+        refAreaRightIndex_P = [refAreaLeftIndex_P, (refAreaLeftIndex_P = refAreaRightIndex_P)][0];
+      }
+      if (refLeft_P === '' || refRight_P === '') return;
+
+      // yAxis domain
+      [newBottom_P, newTop_P] = getAxisYDomain(mainChartData, refLeft_P, refRight_P, PREC_UNIT, 1);
+      if (!temp && !evapo) {
+        dispatch(
+          setChartsProps({
+            newProps: {
+              ...chartsState,
+              precChartRef: mainChartData.slice(refAreaLeftIndex_P, refAreaRightIndex_P + 1),
+              refAreaLeft_P: '',
+              refAreaRight_P: '',
+              left_P: refLeft_P,
+              right_P: refRight_P,
+              top_P: newTop_P,
+              bottom_P: newBottom_P,
+            },
+          })
+        );
+      }
+    }
+
     if (evapo) {
-      if (!temp && (refAreaLeft_ET0 === refAreaRight_ET0 || refAreaLeft_ET0 === '' || refAreaRight_ET0 === '')) {
+      if (
+        !temp &&
+        !prec &&
+        (refAreaLeft_ET0 === refAreaRight_ET0 || refAreaLeft_ET0 === '' || refAreaRight_ET0 === '')
+      ) {
         dispatch(
           setChartsProps({
             newProps: {
@@ -133,6 +201,15 @@ const MainChart = () => {
             right: temp ? refRight : chartsState.right,
             top: temp ? newTop : chartsState.top,
             bottom: temp ? newBottom : chartsState.bottom,
+            precChartRef: prec
+              ? mainChartData.slice(refAreaLeftIndex_P, refAreaRightIndex_P + 1)
+              : chartsState.precChartRef,
+            refAreaLeft_P: prec ? '' : chartsState.refAreaLeft_P,
+            refAreaRight_P: prec ? '' : chartsState.refAreaRight_P,
+            left_P: prec ? refLeft_P : chartsState.left_P,
+            right_P: prec ? refRight_P : chartsState.right_P,
+            top_P: prec ? newTop_P : chartsState.top_P,
+            bottom_P: prec ? newBottom_P : chartsState.bottom_P,
             evapoChartRef: mainChartData.slice(refAreaLeftIndex_ET0, refAreaRightIndex_ET0 + 1),
             refAreaLeft_ET0: '',
             refAreaRight_ET0: '',
@@ -193,14 +270,22 @@ const MainChart = () => {
 
   useEffect(() => {
     if (!chartsState.wasMonthSelected) return;
-    zoom(true, true);
+    zoom(true, true, true);
   }, [chartsState.wasMonthSelected]);
 
   useEffect(() => {
     if (_.isEmpty(selectedTableNames)) {
       dispatch(
         setChartsProps({
-          newProps: { ...chartsState, top: null, bottom: null, top_ET0: null, bottom_ET0: null },
+          newProps: {
+            ...chartsState,
+            top: null,
+            bottom: null,
+            top_ET0: null,
+            bottom_ET0: null,
+            top_P: null,
+            bottom_P: null,
+          },
         })
       );
       dispatch(setSelectedTables({ newTables: [] }));
@@ -218,6 +303,7 @@ const MainChart = () => {
             Data: data.Data.slice(5),
             [`${TEMP_UNIT}${year}`]: newData[idx].T,
             [`${EVAPO_UNIT}${year}`]: newData[idx].ET0,
+            [`${PREC_UNIT}${year}`]: newData[idx].P,
           }));
           const [newBottom, newTop] = getAxisYDomain(
             newChartData,
@@ -233,17 +319,27 @@ const MainChart = () => {
             EVAPO_UNIT,
             1
           );
+          const [newBottom_P, newTop_P] = getAxisYDomain(
+            newChartData,
+            newChartData[0].Data,
+            newChartData[newChartData.length - 1].Data,
+            PREC_UNIT,
+            1
+          );
           dispatch(
             setChartsProps({
               newProps: {
                 ...chartsState,
                 mainChartData: newChartData,
                 tempChartRef: newChartData,
+                evapoChartRef: newChartData,
+                precChartRef: newChartData,
                 top: newTop,
                 bottom: newBottom,
-                evapoChartRef: newChartData,
                 top_ET0: newTop_ET0,
                 bottom_ET0: newBottom_ET0,
+                top_P: newTop_P,
+                bottom_P: newBottom_P,
               },
             })
           );
@@ -282,6 +378,13 @@ const MainChart = () => {
         EVAPO_UNIT,
         1
       );
+      const [newBottom_P, newTop_P] = getAxisYDomain(
+        newChartData,
+        newChartData[0].Data,
+        newChartData[newChartData.length - 1].Data,
+        PREC_UNIT,
+        1
+      );
       dispatch(
         setChartsProps({
           newProps: {
@@ -289,10 +392,13 @@ const MainChart = () => {
             mainChartData: newChartData,
             tempChartRef: newChartData,
             evapoChartRef: newChartData,
+            precChartRef: newChartData,
             top: newTop,
             bottom: newBottom,
             top_ET0: newTop_ET0,
             bottom_ET0: newBottom_ET0,
+            top_P: newTop_P,
+            bottom_P: newBottom_P,
           },
         })
       );
@@ -363,7 +469,7 @@ const MainChart = () => {
         </Typography>
         <Box>
           <ResponsiveContainer height={300}>
-            <ComposedChart
+            <LineChart
               width={900}
               height={300}
               data={chartsState.tempChartRef}
@@ -378,7 +484,7 @@ const MainChart = () => {
                   dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight: event.activeLabel } }));
                 }
               }}
-              onMouseUp={() => zoom(true, false)}
+              onMouseUp={() => zoom(true, false, false)}
               style={{
                 backgroundColor: '#fff',
                 padding: '2rem 0',
@@ -440,7 +546,7 @@ const MainChart = () => {
                   fillOpacity={0.3}
                 />
               ) : null}
-            </ComposedChart>
+            </LineChart>
           </ResponsiveContainer>
         </Box>
         <Typography
@@ -457,7 +563,7 @@ const MainChart = () => {
         </Typography>
         <Box>
           <ResponsiveContainer height={300}>
-            <ComposedChart
+            <LineChart
               width={900}
               height={300}
               data={chartsState.evapoChartRef}
@@ -472,7 +578,7 @@ const MainChart = () => {
                   dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_ET0: event.activeLabel } }));
                 }
               }}
-              onMouseUp={() => zoom(false, true)}
+              onMouseUp={() => zoom(false, true, false)}
               style={{
                 backgroundColor: '#fff',
                 padding: '2rem 0',
@@ -534,7 +640,101 @@ const MainChart = () => {
                   fillOpacity={0.3}
                 />
               ) : null}
-            </ComposedChart>
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+        <Typography
+          variant='h4'
+          sx={{
+            color: '#fff',
+            fontSize: '1.2rem',
+            textAlign: 'left',
+            marginTop: '3rem',
+            marginBottom: '-2rem',
+          }}
+        >
+          Opad atmosferyczny [mm]
+        </Typography>
+        <Box>
+          <ResponsiveContainer height={300}>
+            <LineChart
+              width={900}
+              height={300}
+              data={chartsState.precChartRef}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              onMouseDown={(event) => {
+                if (event && event.activeLabel) {
+                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft_P: event.activeLabel } }));
+                }
+              }}
+              onMouseMove={(event) => {
+                if (event && event.activeLabel && chartsState.refAreaLeft_P !== '') {
+                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_P: event.activeLabel } }));
+                }
+              }}
+              onMouseUp={() => zoom(false, false, true)}
+              style={{
+                backgroundColor: '#fff',
+                padding: '2rem 0',
+              }}
+            >
+              <CartesianGrid
+                stroke='#00000050'
+                strokeDasharray='3 3'
+                horizontalPoints={[5, 80, 160]}
+              />
+              <XAxis
+                dataKey='Data'
+                padding='gap'
+                domain={[chartsState.left_P, chartsState.right_P]}
+                tickCount={10}
+                tick={{ fill: '#00000080' }}
+                tickLine={{ stroke: '#00000050' }}
+              />
+              <YAxis
+                dataKey={PREC_UNIT}
+                yAxisId={PREC_UNIT}
+                padding={{ bottom: 10, top: 10 }}
+                domain={[chartsState.bottom_P as number, chartsState.top_P as number]}
+                tick={{ fill: '#00000080' }}
+                tickLine={{ stroke: '#00000050' }}
+              />
+              {!_.isEmpty(chartsState.precChartRef) &&
+                Object.keys(chartsState.precChartRef[0])
+                  .filter((key) => key !== 'Data' && _.startsWith(key, PREC_UNIT))
+                  .map((key, idx) => {
+                    return (
+                      <Line
+                        key={key}
+                        type='monotone'
+                        dataKey={key}
+                        yAxisId={PREC_UNIT}
+                        stroke={CHART_COLORS[idx]}
+                        strokeWidth={2}
+                        animationDuration={300}
+                        dot={false}
+                      />
+                    );
+                  })}
+              <Tooltip
+                content={<CustomTooltip />}
+                wrapperStyle={{
+                  color: '#fff',
+                  backgroundColor: '#000',
+                  padding: '0 1rem',
+                  opacity: 0.8,
+                }}
+              />
+              <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
+              {chartsState.refAreaLeft_P && chartsState.refAreaRight_P ? (
+                <ReferenceArea
+                  yAxisId={PREC_UNIT}
+                  x1={chartsState.refAreaLeft_P}
+                  x2={chartsState.refAreaRight_P}
+                  fillOpacity={0.3}
+                />
+              ) : null}
+            </LineChart>
           </ResponsiveContainer>
         </Box>
       </Box>

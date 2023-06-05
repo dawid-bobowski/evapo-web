@@ -49,19 +49,26 @@ interface ChartsState {
   mainChartData: IChartDataRow[];
   tempChartRef: IChartDataRow[];
   evapoChartRef: IChartDataRow[];
+  precChartRef: IChartDataRow[];
   wasMonthSelected: boolean;
   refAreaLeft: string;
   refAreaLeft_ET0: string;
+  refAreaLeft_P: string;
   refAreaRight: string;
   refAreaRight_ET0: string;
+  refAreaRight_P: string;
   left: string;
   left_ET0: string;
+  left_P: string;
   right: string;
   right_ET0: string;
+  right_P: string;
   top: number | null;
   top_ET0: number | null;
+  top_P: number | null;
   bottom: number | null;
   bottom_ET0: number | null;
+  bottom_P: number | null;
 }
 
 interface IHandleChangeSelectChangeProps {

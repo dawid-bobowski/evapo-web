@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { calculateEvapo } from '../utils';
 
 export const getDbTable = async (selectedTableName: string): Promise<ITableRow[]> => {
   const response: Response = await fetch(`http://127.0.0.1:3000/table/${selectedTableName}`, { method: 'GET' });
