@@ -152,6 +152,28 @@ const SidePanel = () => {
           </Select>
         </FormControl>
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+          <FormLabel>Wybierz przedział i pobierz dane w pliku CSV:</FormLabel>
+          <Button
+            onClick={() => createTextFile(chartsState.mainChartData, selectedChartNames, chartsState.left, chartsState.right)}
+            sx={{
+              width: 120,
+              lineHeight: 1.5,
+              fontWeight: 'bold',
+              height: '2.5rem',
+              color: '#002d80',
+              backgroundColor: '#fff',
+              border: '1px solid rgba(0, 0, 0, 0.2)',
+              textTransform: 'capitalize',
+              '&:hover': {
+                border: '1px solid rgba(0, 0, 0, 0.87)',
+                backgroundColor: '#fff',
+              },
+            }}
+            >
+            Pobierz dane
+          </Button>
+          <FormLabel sx={{ marginBottom: '2rem', fontSize: '0.75rem' }}>(miesiąc z listy lub ręcznie na wykresie z temperaturą)</FormLabel>
+          <FormLabel>Zresetuj przedział:</FormLabel>
           <Button
             onClick={resetZoom}
             sx={{
@@ -170,44 +192,6 @@ const SidePanel = () => {
             }}
           >
             Reset
-          </Button>
-          <Button
-            onClick={() => createTextFile(chartsState.tempChartRef, selectedChartNames, chartsState.left, chartsState.right)}
-            sx={{
-              width: 120,
-              lineHeight: 1.5,
-              fontWeight: 'bold',
-              height: '2.5rem',
-              color: '#002d80',
-              backgroundColor: '#fff',
-              border: '1px solid rgba(0, 0, 0, 0.2)',
-              textTransform: 'capitalize',
-              '&:hover': {
-                border: '1px solid rgba(0, 0, 0, 0.87)',
-                backgroundColor: '#fff',
-              },
-            }}
-            >
-            Pobierz T
-          </Button>
-          <Button
-            onClick={() => createTextFile(chartsState.evapoChartRef, selectedChartNames, chartsState.left_ET0, chartsState.right_ET0)}
-            sx={{
-              width: 120,
-              lineHeight: 1.5,
-              fontWeight: 'bold',
-              height: '2.5rem',
-              color: '#002d80',
-              backgroundColor: '#fff',
-              border: '1px solid rgba(0, 0, 0, 0.2)',
-              textTransform: 'capitalize',
-              '&:hover': {
-                border: '1px solid rgba(0, 0, 0, 0.87)',
-                backgroundColor: '#fff',
-              },
-            }}
-            >
-            Pobierz ET0
           </Button>
         </Box>
       </Box>
