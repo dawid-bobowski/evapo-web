@@ -10,6 +10,16 @@ export const DB_NAMES: string[] = [
   'byd_2013_wdk',
   'byd_2012_wdk',
   'byd_2011_wdk',
+  'byd_2010_wdk',
+  'byd_2009_wdk',
+  'byd_2008_wdk',
+  'byd_2007_wdk',
+  'byd_2006_wdk',
+  'byd_2005_wdk',
+  'byd_2004_wdk',
+  'byd_2003_wdk',
+  'byd_2002_wdk',
+  'byd_2001_wdk',
 ];
 
 export const MONTHS: string[] = ['kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik'];
