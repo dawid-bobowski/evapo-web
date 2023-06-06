@@ -132,6 +132,11 @@ const SidePanel = () => {
               dispatch(setSelectedTableNames({ newNames: event.target.value }));
               dispatch(setSelectedMonth({ newMonth: '' }));
             }}
+            MenuProps={{
+              sx: {
+                maxHeight: '300px',
+              }
+            }}
           >
             {DB_NAMES.map((name) => (
               <MenuItem
