@@ -182,7 +182,7 @@ const SidePanel = () => {
             gap: '0.5rem',
           }}
         >
-          <FormLabel>Wybierz przedział i pobierz dane w pliku CSV:</FormLabel>
+          <FormLabel>Wybierz przedział* i pobierz dane w pliku CSV:</FormLabel>
           <Button
             onClick={() =>
               createTextFile(chartsState.mainChartData, selectedChartNames, chartsState.left, chartsState.right)
@@ -205,7 +205,7 @@ const SidePanel = () => {
             Pobierz dane
           </Button>
           <FormLabel sx={{ marginBottom: '2rem', fontSize: '0.75rem' }}>
-            (miesiąc z listy lub ręcznie na wykresie z temperaturą)
+            * miesiąc z listy lub ręcznie na wykresie z temperaturą
           </FormLabel>
           <FormLabel>Zresetuj przedział:</FormLabel>
           <Button
