@@ -15,7 +15,7 @@ const SidePanel = () => {
   const chartsState = useAppSelector((state) => state.charts);
 
   /**
-   * Resets zoom on both tables.
+   * Resets zoom on all tables.
    */
   const resetZoom = () => {
     const [newBottom, newTop] = getAxisYDomain(
@@ -135,7 +135,7 @@ const SidePanel = () => {
             MenuProps={{
               sx: {
                 maxHeight: '300px',
-              }
+              },
             }}
           >
             {DB_NAMES.map((name) => (
