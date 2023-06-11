@@ -11,7 +11,6 @@ import {
 } from 'recharts';
 import { useEffect } from 'react';
 import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import _ from 'lodash';
 
@@ -22,9 +21,7 @@ import { getAxisYDomain } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import { getDbTable } from '../api';
 import { CHART_COLORS, TEMP_UNIT, EVAPO_UNIT, PREC_UNIT } from '../constants';
-import SidePanel from './SidePanel';
 import usePrevious from '../hooks/usePrevious';
-import logo from '../assets/logo-ukw.jpg';
 
 const MainChart = () => {
   const dispatch = useAppDispatch();
@@ -407,336 +404,300 @@ const MainChart = () => {
 
   return (
     <Box
-      id='main-window'
+      id='charts'
       sx={{
+        width: 'calc(100% - 200px)',
+        maxWidth: 1400,
+        minHeight: 'calc(100vh - 10rem)',
         display: 'flex',
-        marginLeft: 'calc(200px + 4rem)',
+        flexDirection: 'column',
+        gap: '3rem',
+        margin: '0 auto',
+        paddingTop: '4rem',
+        paddingBottom: '6rem',
       }}
     >
-      <SidePanel />
-      <Box
+      <Typography
+        variant='h4'
         sx={{
-          width: 'calc(100% - 3rem)',
-          height: '4rem',
-          backgroundColor: '#fff',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          boxShadow: '-34px 9px 11px -13px rgba(66, 68, 90, 1)',
-          padding: '0 2rem 0 1rem',
-          zIndex: 10,
+          color: '#fff',
+          fontSize: '1.2rem',
+          textAlign: 'left',
+          marginTop: '2rem',
+          marginBottom: '-2rem',
         }}
       >
-        <Avatar
-          alt='Logo UKW'
-          src={logo}
-        />
-        <Typography
-          variant='h2'
-          sx={{ color: '#000', fontSize: '1.2rem' }}
-        >
-          Aplikacja do wizualizacji danych meteorologicznych dla miasta Bydgoszcz
-        </Typography>
-      </Box>
-      <Box
-        id='charts'
-        sx={{
-          width: 'calc(100% - 200px)',
-          maxWidth: 1400,
-          minHeight: 'calc(100vh - 10rem)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '3rem',
-          margin: '0 auto',
-          paddingTop: '4rem',
-          paddingBottom: '6rem',
-        }}
-      >
-        <Typography
-          variant='h4'
-          sx={{
-            color: '#fff',
-            fontSize: '1.2rem',
-            textAlign: 'left',
-            marginTop: '2rem',
-            marginBottom: '-2rem',
-          }}
-        >
-          Średnia temperatura [°C]
-        </Typography>
-        <Box>
-          <ResponsiveContainer height={300}>
-            <LineChart
-              width={900}
-              height={300}
-              data={chartsState.tempChartRef}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              onMouseDown={(event) => {
-                if (event && event.activeLabel) {
-                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft: event.activeLabel } }));
-                }
+        Średnia temperatura [°C]
+      </Typography>
+      <Box>
+        <ResponsiveContainer height={300}>
+          <LineChart
+            width={900}
+            height={300}
+            data={chartsState.tempChartRef}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            onMouseDown={(event) => {
+              if (event && event.activeLabel) {
+                dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft: event.activeLabel } }));
+              }
+            }}
+            onMouseMove={(event) => {
+              if (event && event.activeLabel && chartsState.refAreaLeft !== '') {
+                dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight: event.activeLabel } }));
+              }
+            }}
+            onMouseUp={() => zoom(true, false, false)}
+            style={{
+              backgroundColor: '#fff',
+              padding: '2rem 0',
+            }}
+          >
+            <CartesianGrid
+              stroke='#00000050'
+              strokeDasharray='3 3'
+              horizontalPoints={[5, 80, 160]}
+            />
+            <XAxis
+              dataKey='Data'
+              padding='gap'
+              domain={[chartsState.left, chartsState.right]}
+              tickCount={10}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
+            />
+            <YAxis
+              dataKey={TEMP_UNIT}
+              yAxisId={TEMP_UNIT}
+              padding={{ bottom: 10, top: 10 }}
+              domain={[chartsState.bottom as number, chartsState.top as number]}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
+            />
+            {!_.isEmpty(chartsState.tempChartRef) &&
+              Object.keys(chartsState.tempChartRef[0])
+                .filter((key) => key !== 'Data' && _.startsWith(key, TEMP_UNIT))
+                .map((key, idx) => {
+                  return (
+                    <Line
+                      key={key}
+                      type='monotone'
+                      dataKey={key}
+                      yAxisId={TEMP_UNIT}
+                      stroke={CHART_COLORS[idx]}
+                      strokeWidth={2}
+                      animationDuration={300}
+                      dot={false}
+                    />
+                  );
+                })}
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{
+                color: '#fff',
+                backgroundColor: '#000',
+                padding: '0 1rem',
+                opacity: 0.8,
               }}
-              onMouseMove={(event) => {
-                if (event && event.activeLabel && chartsState.refAreaLeft !== '') {
-                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight: event.activeLabel } }));
-                }
-              }}
-              onMouseUp={() => zoom(true, false, false)}
-              style={{
-                backgroundColor: '#fff',
-                padding: '2rem 0',
-              }}
-            >
-              <CartesianGrid
-                stroke='#00000050'
-                strokeDasharray='3 3'
-                horizontalPoints={[5, 80, 160]}
-              />
-              <XAxis
-                dataKey='Data'
-                padding='gap'
-                domain={[chartsState.left, chartsState.right]}
-                tickCount={10}
-                tick={{ fill: '#00000080' }}
-                tickLine={{ stroke: '#00000050' }}
-              />
-              <YAxis
-                dataKey={TEMP_UNIT}
+            />
+            <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
+            {chartsState.refAreaLeft && chartsState.refAreaRight ? (
+              <ReferenceArea
                 yAxisId={TEMP_UNIT}
-                padding={{ bottom: 10, top: 10 }}
-                domain={[chartsState.bottom as number, chartsState.top as number]}
-                tick={{ fill: '#00000080' }}
-                tickLine={{ stroke: '#00000050' }}
+                x1={chartsState.refAreaLeft}
+                x2={chartsState.refAreaRight}
+                fillOpacity={0.3}
               />
-              {!_.isEmpty(chartsState.tempChartRef) &&
-                Object.keys(chartsState.tempChartRef[0])
-                  .filter((key) => key !== 'Data' && _.startsWith(key, TEMP_UNIT))
-                  .map((key, idx) => {
-                    return (
-                      <Line
-                        key={key}
-                        type='monotone'
-                        dataKey={key}
-                        yAxisId={TEMP_UNIT}
-                        stroke={CHART_COLORS[idx]}
-                        strokeWidth={2}
-                        animationDuration={300}
-                        dot={false}
-                      />
-                    );
-                  })}
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperStyle={{
-                  color: '#fff',
-                  backgroundColor: '#000',
-                  padding: '0 1rem',
-                  opacity: 0.8,
-                }}
-              />
-              <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
-              {chartsState.refAreaLeft && chartsState.refAreaRight ? (
-                <ReferenceArea
-                  yAxisId={TEMP_UNIT}
-                  x1={chartsState.refAreaLeft}
-                  x2={chartsState.refAreaRight}
-                  fillOpacity={0.3}
-                />
-              ) : null}
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-        <Typography
-          variant='h4'
-          sx={{
-            color: '#fff',
-            fontSize: '1.2rem',
-            textAlign: 'left',
-            marginTop: '3rem',
-            marginBottom: '-2rem',
-          }}
-        >
-          Opad atmosferyczny [mm]
-        </Typography>
-        <Box>
-          <ResponsiveContainer height={300}>
-            <LineChart
-              width={900}
-              height={300}
-              data={chartsState.precChartRef}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              onMouseDown={(event) => {
-                if (event && event.activeLabel) {
-                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft_P: event.activeLabel } }));
-                }
+            ) : null}
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+      <Typography
+        variant='h4'
+        sx={{
+          color: '#fff',
+          fontSize: '1.2rem',
+          textAlign: 'left',
+          marginTop: '3rem',
+          marginBottom: '-2rem',
+        }}
+      >
+        Opad atmosferyczny [mm]
+      </Typography>
+      <Box>
+        <ResponsiveContainer height={300}>
+          <LineChart
+            width={900}
+            height={300}
+            data={chartsState.precChartRef}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            onMouseDown={(event) => {
+              if (event && event.activeLabel) {
+                dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft_P: event.activeLabel } }));
+              }
+            }}
+            onMouseMove={(event) => {
+              if (event && event.activeLabel && chartsState.refAreaLeft_P !== '') {
+                dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_P: event.activeLabel } }));
+              }
+            }}
+            onMouseUp={() => zoom(false, false, true)}
+            style={{
+              backgroundColor: '#fff',
+              padding: '2rem 0',
+            }}
+          >
+            <CartesianGrid
+              stroke='#00000050'
+              strokeDasharray='3 3'
+              horizontalPoints={[5, 80, 160]}
+            />
+            <XAxis
+              dataKey='Data'
+              padding='gap'
+              domain={[chartsState.left_P, chartsState.right_P]}
+              tickCount={10}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
+            />
+            <YAxis
+              dataKey={PREC_UNIT}
+              yAxisId={PREC_UNIT}
+              padding={{ bottom: 10, top: 10 }}
+              domain={[chartsState.bottom_P as number, chartsState.top_P as number]}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
+            />
+            {!_.isEmpty(chartsState.precChartRef) &&
+              Object.keys(chartsState.precChartRef[0])
+                .filter((key) => key !== 'Data' && _.startsWith(key, PREC_UNIT))
+                .map((key, idx) => {
+                  return (
+                    <Line
+                      key={key}
+                      type='monotone'
+                      dataKey={key}
+                      yAxisId={PREC_UNIT}
+                      stroke={CHART_COLORS[idx]}
+                      strokeWidth={2}
+                      animationDuration={300}
+                      dot={false}
+                    />
+                  );
+                })}
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{
+                color: '#fff',
+                backgroundColor: '#000',
+                padding: '0 1rem',
+                opacity: 0.8,
               }}
-              onMouseMove={(event) => {
-                if (event && event.activeLabel && chartsState.refAreaLeft_P !== '') {
-                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_P: event.activeLabel } }));
-                }
-              }}
-              onMouseUp={() => zoom(false, false, true)}
-              style={{
-                backgroundColor: '#fff',
-                padding: '2rem 0',
-              }}
-            >
-              <CartesianGrid
-                stroke='#00000050'
-                strokeDasharray='3 3'
-                horizontalPoints={[5, 80, 160]}
-              />
-              <XAxis
-                dataKey='Data'
-                padding='gap'
-                domain={[chartsState.left_P, chartsState.right_P]}
-                tickCount={10}
-                tick={{ fill: '#00000080' }}
-                tickLine={{ stroke: '#00000050' }}
-              />
-              <YAxis
-                dataKey={PREC_UNIT}
+            />
+            <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
+            {chartsState.refAreaLeft_P && chartsState.refAreaRight_P ? (
+              <ReferenceArea
                 yAxisId={PREC_UNIT}
-                padding={{ bottom: 10, top: 10 }}
-                domain={[chartsState.bottom_P as number, chartsState.top_P as number]}
-                tick={{ fill: '#00000080' }}
-                tickLine={{ stroke: '#00000050' }}
+                x1={chartsState.refAreaLeft_P}
+                x2={chartsState.refAreaRight_P}
+                fillOpacity={0.3}
               />
-              {!_.isEmpty(chartsState.precChartRef) &&
-                Object.keys(chartsState.precChartRef[0])
-                  .filter((key) => key !== 'Data' && _.startsWith(key, PREC_UNIT))
-                  .map((key, idx) => {
-                    return (
-                      <Line
-                        key={key}
-                        type='monotone'
-                        dataKey={key}
-                        yAxisId={PREC_UNIT}
-                        stroke={CHART_COLORS[idx]}
-                        strokeWidth={2}
-                        animationDuration={300}
-                        dot={false}
-                      />
-                    );
-                  })}
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperStyle={{
-                  color: '#fff',
-                  backgroundColor: '#000',
-                  padding: '0 1rem',
-                  opacity: 0.8,
-                }}
-              />
-              <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
-              {chartsState.refAreaLeft_P && chartsState.refAreaRight_P ? (
-                <ReferenceArea
-                  yAxisId={PREC_UNIT}
-                  x1={chartsState.refAreaLeft_P}
-                  x2={chartsState.refAreaRight_P}
-                  fillOpacity={0.3}
-                />
-              ) : null}
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-        <Typography
-          variant='h4'
-          sx={{
-            color: '#fff',
-            fontSize: '1.2rem',
-            textAlign: 'left',
-            marginTop: '3rem',
-            marginBottom: '-2rem',
-          }}
-        >
-          Ewapotranspiracja [mm]
-        </Typography>
-        <Box>
-          <ResponsiveContainer height={300}>
-            <LineChart
-              width={900}
-              height={300}
-              data={chartsState.evapoChartRef}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              onMouseDown={(event) => {
-                if (event && event.activeLabel) {
-                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft_ET0: event.activeLabel } }));
-                }
+            ) : null}
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+      <Typography
+        variant='h4'
+        sx={{
+          color: '#fff',
+          fontSize: '1.2rem',
+          textAlign: 'left',
+          marginTop: '3rem',
+          marginBottom: '-2rem',
+        }}
+      >
+        Ewapotranspiracja [mm]
+      </Typography>
+      <Box>
+        <ResponsiveContainer height={300}>
+          <LineChart
+            width={900}
+            height={300}
+            data={chartsState.evapoChartRef}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            onMouseDown={(event) => {
+              if (event && event.activeLabel) {
+                dispatch(setChartsProps({ newProps: { ...chartsState, refAreaLeft_ET0: event.activeLabel } }));
+              }
+            }}
+            onMouseMove={(event) => {
+              if (event && event.activeLabel && chartsState.refAreaLeft_ET0 !== '') {
+                dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_ET0: event.activeLabel } }));
+              }
+            }}
+            onMouseUp={() => zoom(false, true, false)}
+            style={{
+              backgroundColor: '#fff',
+              padding: '2rem 0',
+            }}
+          >
+            <CartesianGrid
+              stroke='#00000050'
+              strokeDasharray='3 3'
+              horizontalPoints={[5, 80, 160]}
+            />
+            <XAxis
+              dataKey='Data'
+              padding='gap'
+              domain={[chartsState.left_ET0, chartsState.right_ET0]}
+              tickCount={10}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
+            />
+            <YAxis
+              dataKey={EVAPO_UNIT}
+              yAxisId={EVAPO_UNIT}
+              padding={{ bottom: 10, top: 10 }}
+              domain={[chartsState.bottom_ET0 as number, chartsState.top_ET0 as number]}
+              tick={{ fill: '#00000080' }}
+              tickLine={{ stroke: '#00000050' }}
+            />
+            {!_.isEmpty(chartsState.evapoChartRef) &&
+              Object.keys(chartsState.evapoChartRef[0])
+                .filter((key) => key !== 'Data' && _.startsWith(key, EVAPO_UNIT))
+                .map((key, idx) => {
+                  return (
+                    <Line
+                      key={key}
+                      type='monotone'
+                      dataKey={key}
+                      yAxisId={EVAPO_UNIT}
+                      stroke={CHART_COLORS[idx]}
+                      strokeWidth={2}
+                      animationDuration={300}
+                      dot={false}
+                    />
+                  );
+                })}
+            <Tooltip
+              content={<CustomTooltip />}
+              wrapperStyle={{
+                color: '#fff',
+                backgroundColor: '#000',
+                padding: '0 1rem',
+                opacity: 0.8,
               }}
-              onMouseMove={(event) => {
-                if (event && event.activeLabel && chartsState.refAreaLeft_ET0 !== '') {
-                  dispatch(setChartsProps({ newProps: { ...chartsState, refAreaRight_ET0: event.activeLabel } }));
-                }
-              }}
-              onMouseUp={() => zoom(false, true, false)}
-              style={{
-                backgroundColor: '#fff',
-                padding: '2rem 0',
-              }}
-            >
-              <CartesianGrid
-                stroke='#00000050'
-                strokeDasharray='3 3'
-                horizontalPoints={[5, 80, 160]}
-              />
-              <XAxis
-                dataKey='Data'
-                padding='gap'
-                domain={[chartsState.left_ET0, chartsState.right_ET0]}
-                tickCount={10}
-                tick={{ fill: '#00000080' }}
-                tickLine={{ stroke: '#00000050' }}
-              />
-              <YAxis
-                dataKey={EVAPO_UNIT}
+            />
+            <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
+            {chartsState.refAreaLeft_ET0 && chartsState.refAreaRight_ET0 ? (
+              <ReferenceArea
                 yAxisId={EVAPO_UNIT}
-                padding={{ bottom: 10, top: 10 }}
-                domain={[chartsState.bottom_ET0 as number, chartsState.top_ET0 as number]}
-                tick={{ fill: '#00000080' }}
-                tickLine={{ stroke: '#00000050' }}
+                x1={chartsState.refAreaLeft_ET0}
+                x2={chartsState.refAreaRight_ET0}
+                fillOpacity={0.3}
               />
-              {!_.isEmpty(chartsState.evapoChartRef) &&
-                Object.keys(chartsState.evapoChartRef[0])
-                  .filter((key) => key !== 'Data' && _.startsWith(key, EVAPO_UNIT))
-                  .map((key, idx) => {
-                    return (
-                      <Line
-                        key={key}
-                        type='monotone'
-                        dataKey={key}
-                        yAxisId={EVAPO_UNIT}
-                        stroke={CHART_COLORS[idx]}
-                        strokeWidth={2}
-                        animationDuration={300}
-                        dot={false}
-                      />
-                    );
-                  })}
-              <Tooltip
-                content={<CustomTooltip />}
-                wrapperStyle={{
-                  color: '#fff',
-                  backgroundColor: '#000',
-                  padding: '0 1rem',
-                  opacity: 0.8,
-                }}
-              />
-              <Legend wrapperStyle={{ margin: 10, fontWeight: 'bold' }} />
-              {chartsState.refAreaLeft_ET0 && chartsState.refAreaRight_ET0 ? (
-                <ReferenceArea
-                  yAxisId={EVAPO_UNIT}
-                  x1={chartsState.refAreaLeft_ET0}
-                  x2={chartsState.refAreaRight_ET0}
-                  fillOpacity={0.3}
-                />
-              ) : null}
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
+            ) : null}
+          </LineChart>
+        </ResponsiveContainer>
       </Box>
     </Box>
   );
