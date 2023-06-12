@@ -41,7 +41,6 @@ export const calculateEvapo = (props: ICalculateEvapoProps): number | null => {
 
 /**
  * Converts string to string containing only numeric characters.
- * TO BE FIXED
  * @param {string} text text to be converted.
  * @returns {string} converted text.
  */
@@ -136,7 +135,7 @@ const getCSVRows = (content: IChartDataRow[], left: string, right: string): stri
   return text;
 };
 
-const GetCSVFileName = (chartNames: string[]): string => {
+const getCSVFileName = (chartNames: string[]): string => {
   let fileName: string = 'byd';
   _.forEach(chartNames, (name) => {
     fileName += `_${name.slice(4, 8)}`;
@@ -150,5 +149,5 @@ export const createTextFile = (content: IChartDataRow[], selectedChartNames: str
   const blob = new Blob([contentRows], {
     type: 'text/csv',
   });
-  saveAs(blob, GetCSVFileName(selectedChartNames) + '.csv');
+  saveAs(blob, getCSVFileName(selectedChartNames) + '.csv');
 };
