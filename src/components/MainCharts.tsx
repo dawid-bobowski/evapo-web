@@ -17,7 +17,7 @@ import _ from 'lodash';
 import { setSelectedTables } from '../features/table/tablesSlice';
 import { setChartsProps } from '../features/chart/chartsSlice';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { getAxisYDomain } from '../utils';
+import { calculateEvapo, getAxisYDomain } from '../utils';
 import CustomTooltip from './CustomTooltip';
 import { getDbTable } from '../api';
 import { CHART_COLORS, TEMP_UNIT, EVAPO_UNIT, PREC_UNIT } from '../constants';
@@ -299,7 +299,13 @@ const MainChart = () => {
             ...chartsState.mainChartData[idx],
             Data: data.Data.slice(5),
             [`${TEMP_UNIT}${year}`]: newData[idx].T,
-            [`${EVAPO_UNIT}${year}`]: newData[idx].ET0,
+            [`${EVAPO_UNIT}${year}`]: calculateEvapo({
+              RH: newData[idx].RH,
+              R_a: newData[idx].Ra,
+              R_s: newData[idx].Rs,
+              T: newData[idx].T,
+              V: newData[idx].V,
+            }),
             [`${PREC_UNIT}${year}`]: newData[idx].P,
           }));
           const [newBottom, newTop] = getAxisYDomain(
