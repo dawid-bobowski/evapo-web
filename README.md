@@ -1,3 +1,1 @@
-### **Known bugs:**
-
-- none
+### **Aplikacja do wizualizacji danych meteorologicznych dla miasta Bydgoszcz**
